@@ -80,7 +80,7 @@ predicted_data = scaler.inverse_transform(predictions)
 predicted_df = pd.DataFrame(predicted_data, columns=df1.columns, index=df1.index)
 
 
-predicted_df.to_csv('predicted_density_matrix.csv')
+predicted_df.to_csv('../predicted_density_matrix.csv')
 
 
 plt.figure(figsize=(12, 8))
