@@ -15,12 +15,23 @@
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-        // Inicializar el mapa
-        var map = L.map('map').setView([-33.4372, -70.6506], 13); // Coordenadas de Santiago, Chile
+        // Coordenadas iniciales y niveles de zoom
+        const initialCoordinates = [-33.4372, -70.6506]; // Coordenadas de Santiago, Chile
+        const initialZoomLevel = 16; // Nivel de zoom inicial
+        const minZoomLevel = 13; // Nivel de zoom mínimo permitido
+        const maxZoomLevel = 19; // Nivel de zoom máximo permitido
+
+        // Inicializar el mapa con las coordenadas y el nivel de zoom inicial
+        var map = L.map('map', {
+            center: initialCoordinates,
+            zoom: initialZoomLevel,
+            minZoom: minZoomLevel,
+            maxZoom: maxZoomLevel
+        });
 
         // Añadir capa de mapa base (ejemplo con OpenStreetMap)
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 18,
+            maxZoom: maxZoomLevel,
             attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
@@ -28,15 +39,58 @@
         var locations = {{{json ubicaciones}}};
         console.log('Ubicaciones en la plantilla:', locations);
 
-        // Iterar sobre todas las ubicaciones y añadir marcadores al mapa
-        locations.forEach(function(location) {
-            if (location.latitud && location.longitud) {
-                var marker = L.marker([location.latitud, location.longitud]).addTo(map);
-                marker.bindPopup(`<b>${location.codigoParadero}</b><br>${location.latitud}, ${location.longitud}`);
+        // Array para almacenar los marcadores
+        var markers = [];
+
+        // Función para añadir los marcadores al mapa
+        function addMarkers() {
+            locations.forEach(function(location) {
+                if (location.latitud && location.longitud) {
+                    var marker = L.marker([location.latitud, location.longitud]);
+                    marker.bindPopup(`<b>${location.codigoParadero}</b><br>${location.latitud}, ${location.longitud}`);
+                    markers.push(marker);
+                } else {
+                    console.error('Error en la ubicación:', location.error);
+                }
+            });
+
+            // Añadir los marcadores al mapa
+            markers.forEach(function(marker) {
+                marker.addTo(map);
+            });
+        }
+
+        // Añadir los marcadores iniciales al cargar la página
+        addMarkers();
+
+        // Función para actualizar los marcadores visibles
+        function updateVisibleMarkers() {
+            var bounds = map.getBounds();
+            var currentZoom = map.getZoom();
+            
+            // Verificar el nivel de zoom
+            if (currentZoom >= 16 && currentZoom <= 19) {
+                markers.forEach(function(marker) {
+                    var isVisible = bounds.contains(marker.getLatLng());
+                    if (isVisible) {
+                        marker.addTo(map);
+                    } else {
+                        map.removeLayer(marker);
+                    }
+                });
             } else {
-                console.error('Error en la ubicación:', location.error);
+                // Si el zoom no está en el rango deseado, ocultar todos los marcadores
+                markers.forEach(function(marker) {
+                    map.removeLayer(marker);
+                });
             }
+        }
+
+        // Llamar a updateVisibleMarkers al iniciar y al mover el mapa
+        map.on('moveend', function() {
+            updateVisibleMarkers();
         });
+
     </script>
 </body>
 </html>
