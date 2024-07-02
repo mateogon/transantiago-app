@@ -4,7 +4,7 @@ Antes de comenzar, asegúrate de tener Node.js y npm instalados en tu máquina. 
 1. **Clona el repositorio:**
 
    ```bash
-   git clone https://github.com/tu_usuario/tu_proyecto.git](https://github.com/AkumuKernel/transantiago-app.git
+   git clone https://github.com/tu_usuario/tu_proyecto.git
    cd transantiago-app
    ```
 
