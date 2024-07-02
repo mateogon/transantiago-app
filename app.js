@@ -42,7 +42,12 @@ app.engine('hbs', engine({
     extname: '.hbs',
     defaultLayout: 'main',
     layoutsDir: __dirname + '/views/layouts/',
-    partialsDir: __dirname + '/views/partials/'
+    partialsDir: __dirname + '/views/partials/',
+    helpers: {
+      json: function(context) {
+          return JSON.stringify(context);
+      }
+    }
 }));
 app.set('view engine', 'hbs');
 
@@ -146,6 +151,15 @@ app.get('/map', async (req, res) => {
           ubicaciones.push(row);
         })
         .on('end', () => {
+          // Mostrar las ubicaciones obtenidas en la consola
+          console.log('Ubicaciones obtenidas:', ubicaciones);
+                
+          // Verificar el número de ubicaciones obtenidas
+          if (ubicaciones.length === 0) {
+              console.error('No se encontraron ubicaciones en el archivo CSV.');
+              return res.status(400).send('No se encontraron ubicaciones en el archivo CSV.');
+          }
+
           // Renderizar la vista con las ubicaciones encontradas
           res.render('map', { ubicaciones });
         });
