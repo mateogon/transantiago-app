@@ -1,0 +1,37 @@
+    <h1 class="mt-5">Resultado de la Búsqueda</h1>
+
+    {{#if error}}
+        <div class="alert alert-danger">{{error}}</div>
+    {{else}}
+        <p><strong>Código del Paradero:</strong> {{codigoParadero}}</p>
+        <p><strong>Latitud:</strong> {{latitud}}</p>
+        <p><strong>Longitud:</strong> {{longitud}}</p>
+        <h1>Mapa de la Región Metropolitana</h1>
+        <div id="map"></div>
+        <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+        <script>
+            const lat = {{latitud}};
+            const lon = {{longitud}};
+            const zoomLevel = 15; // Ajusta el nivel de zoom aquí
+
+            //const map = L.map('map').setView([lat, lon], zoomLevel);
+
+            const map = L.map('map', {
+            center: [lat, lon], // Coordenadas de Santiago
+            zoom: zoomLevel, // Nivel de zoom inicial
+            minZoom: 12, // Zoom mínimo permitido
+            maxBounds: L.latLngBounds(
+                L.latLng(-33.0, -71.0), // Esquina suroeste (lat, lng)
+                L.latLng(-33.7, -70.3)  // Esquina noreste (lat, lng)
+            )
+            });
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            L.marker([lat, lon]).addTo(map).bindPopup('<b>Paradero {{codigoParadero}}</b>').openPopup();
+        </script>  
+    {{/if}}
+
+    <a href="/" class="btn btn-primary mt-4">Buscar otro paradero</a>
