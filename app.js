@@ -37,6 +37,18 @@ async function cargarCodigosParaderos() {
     });
   }
 
+// Función para leer CSV y devolver los datos
+function readCSV(filePath) {
+  return new Promise((resolve, reject) => {
+    const results = [];
+    fs.createReadStream(filePath)
+      .pipe(csv())
+      .on('data', (data) => results.push(data))
+      .on('end', () => resolve(results))
+      .on('error', (err) => reject(err));
+  });
+}  
+
 // Configurar Handlebars
 app.engine('hbs', engine({
     extname: '.hbs',
@@ -97,7 +109,18 @@ app.get('/', (req, res) => {
 app.post('/buscar', async (req, res) => {
     const codigoParadero = req.body.codigoParadero;
     const direccionParadero = `${codigoParadero}, Santiago, Chile`;
+    const currentTime = new Date();
+    const currentHour = currentTime.getHours();
+    const currentMinutes = currentTime.getMinutes();
 
+    // Formatear la hora actual al formato "HH:mm:00"
+    const formattedTimeInit = `${currentHour.toString().padStart(2, '0')}:${(Math.floor(currentMinutes / 30) * 30).toString().padStart(2, '0')}:00`;
+    const formattedTimeFinal = `${currentHour.toString().padStart(2, '0')}:${(Math.floor(currentMinutes / 30) * 30+29).toString().padStart(2, '0')}:59`;
+    const data = await readCSV('predicted_density_matrix.csv');
+    // Buscar el paradero y el valor correspondiente a la hora actual
+    const paraderoData = data.find(row => row.paradero === codigoParadero);
+    const densidadActual = paraderoData ? paraderoData[formattedTimeInit] : 'No data available';
+  
     try {
         const response = await axios.get('https://nominatim.openstreetmap.org/search', {
             params: {
@@ -113,7 +136,9 @@ app.post('/buscar', async (req, res) => {
             res.render('result', {
                 codigoParadero,
                 latitud: location.lat,
-                longitud: location.lon
+                longitud: location.lon,
+                hora: `${formattedTimeInit} a ${formattedTimeFinal}`,
+                densidad: densidadActual
             });
         } else {
             res.render('result', {

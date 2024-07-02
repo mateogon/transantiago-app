@@ -4,8 +4,7 @@
         <div class="alert alert-danger">{{error}}</div>
     {{else}}
         <p><strong>Código del Paradero:</strong> {{codigoParadero}}</p>
-        <p><strong>Latitud:</strong> {{latitud}}</p>
-        <p><strong>Longitud:</strong> {{longitud}}</p>
+        <p><strong>Hora:</strong> {{hora}}</p>
         <h1>Mapa de la Región Metropolitana</h1>
         <div id="map"></div>
         <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -28,6 +27,41 @@
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            // Función para calcular el color del círculo en función del porcentaje (0 a 100)
+            function getColorByPercentage(percentage) {
+            // Interpolación lineal entre rojo (0%) y azul (100%)
+            var red = 255 * (100 - percentage) / 100;
+            var blue = 255 * percentage / 100;
+            return `rgb(${red}, 0, ${blue})`;
+            }
+
+            // Función para calcular el radio en función del tamaño del contenedor del mapa
+            function calculateRadius(percentage) {
+            var mapContainer = document.getElementById('map');
+            var width = mapContainer.clientWidth;
+            var height = mapContainer.clientHeight;
+            var minDimension = Math.min(width, height);
+            return (percentage / 100) * minDimension;
+            }
+
+            // Definir el porcentaje del radio (por ejemplo, 50% del tamaño más pequeño del contenedor del mapa)
+            var percentage = 50;
+            var radiusInPixels = calculateRadius(percentage);
+
+            // Convertir el radio de píxeles a metros (esto es aproximado y depende del nivel de zoom y la latitud)
+            var radiusInMeters = map.containerPointToLatLng([0, 0]).distanceTo(map.containerPointToLatLng([radiusInPixels, 0]));
+
+            // Calcular el color del círculo en función del porcentaje
+            var color = getColorByPercentage(percentage);
+
+            // Agregar un círculo en la ubicación especificada
+            var circle = L.circle([{{latitud}}, {{longitud}}], {
+                color: color,
+                fillColor: color,
+                fillOpacity: 0.5,
+                radius: {{densidad}} // Radio en metros
             }).addTo(map);
 
             L.marker([lat, lon]).addTo(map).bindPopup('<b>Paradero {{codigoParadero}}</b>').openPopup();
