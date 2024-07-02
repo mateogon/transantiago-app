@@ -29,7 +29,7 @@ Esto iniciará la aplicación en modo producción.
 
 Este comando utiliza Nodemon para reiniciar automáticamente la aplicación cuando se detectan cambios en los archivos.
 
-## Contrbución
+## Contribución
 
 1. **Cambiar de rama**
    ```bash
