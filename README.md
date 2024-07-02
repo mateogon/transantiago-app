@@ -34,6 +34,7 @@ Este comando utiliza Nodemon para reiniciar automáticamente la aplicación cuan
 1. **Cambiar de rama**
    ```bash
    git checkout -b nueva-rama
+   git add .
    git commit -m 'Agrega nueva funcionalidad'
    git push origin nueva-rama
    ```
