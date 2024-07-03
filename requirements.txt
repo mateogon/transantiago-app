@@ -1,0 +1,10 @@
+pandas
+numpy
+tensorflow
+scikit-learn
+seaborn
+matplotlib
+requests
+pyxlsb
+
+#pip install -r requirements.txt
