@@ -1,19 +1,22 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Mapa de Paraderos</title>
-    <!-- Incluir aquí la librería de mapas (Leaflet, Google Maps API, etc.) -->
-    <!-- Ejemplo con Leaflet.js -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <style>
-        #map { height: 80vh; }
-    </style>
-</head>
-<body>
-    <h1>Mapa de la Región Metropolitana</h1>
-    <p><strong>Hora:</strong> {{hora}}</p>
-    <div id="map"></div>
-
+        <div class="content-page">
+            <div class="container-fluid">
+                <div class="row">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <div class="d-flex flex-column text-center"> 
+                                        <h1 class="">Mapa de la Región Metropolitana</h1>
+                                        <p class=""><strong>Hora:</strong> {{hora}}</p>
+                                        <div class="w-75 h-75" id="map"></div>
+                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                </div>
+            
+            </div>
+        </div>
+        <!-- END Contenido dinámico -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         // Coordenadas iniciales y niveles de zoom
@@ -132,5 +135,4 @@
         });
 
     </script>
-</body>
-</html>
+

@@ -1,69 +1,73 @@
-    <h1 class="mt-5">Resultado de la Búsqueda</h1>
 
-    {{#if error}}
-        <div class="alert alert-danger">{{error}}</div>
-    {{else}}
-        <p><strong>Código del Paradero:</strong> {{codigoParadero}}</p>
-        <p><strong>Hora:</strong> {{hora}}</p>
-        <h1>Mapa de la Región Metropolitana</h1>
-        <div id="map"></div>
-        <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-        <script>
-            const lat = {{latitud}};
-            const lon = {{longitud}};
-            const zoomLevel = 16; // Ajusta el nivel de zoom aquí
+{{#if error}}
+    <div class="alert alert-danger">{{error}}</div>
+{{else}}
+    
+            <div class="content-page">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <div class="d-flex flex-column text-center"> 
+                                        <h1 class="mt-5 text-center">Resultado de la Búsqueda</h1>
+                                        <p><strong>Código del Paradero:</strong> {{codigoParadero}}</p>
+                                        <p class=""><strong>Hora:</strong> {{hora}}</p>
+                                        <div class="w-75 h-75" id="map"></div>
+                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                </div>
+            </div>
+        </div>
+        <!-- END Contenido dinámico -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        const lat = {{latitud}};
+        const lon = {{longitud}};
+        const zoomLevel = 16;
 
-            const map = L.map('map', {
-            center: [lat, lon], // Coordenadas de Santiago
-            zoom: zoomLevel, // Nivel de zoom inicial
-            minZoom: 12, // Zoom mínimo permitido
+        const map = L.map('map', {
+            center: [lat, lon],
+            zoom: zoomLevel,
+            minZoom: 12,
             maxBounds: L.latLngBounds(
-                L.latLng(-33.0, -71.0), // Esquina suroeste (lat, lng)
-                L.latLng(-33.7, -70.3)  // Esquina noreste (lat, lng)
+                L.latLng(-33.0, -71.0),
+                L.latLng(-33.7, -70.3)
             )
-            });
+        });
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
+        }).addTo(map);
 
-            // Función para calcular el color del círculo en función del porcentaje (0 a 100)
-            function getColorByPercentage(percentage) {
-                // Interpolación lineal entre rojo (0%) y azul (100%)
-                var red = 255 * (100 - percentage) / 100;
-                var blue = 255 * percentage / 100;
-                return `rgb(${red}, 0, ${blue})`;
-            }
+        function getColorByPercentage(percentage) {
+            var red = 255 * (100 - percentage) / 100;
+            var blue = 255 * percentage / 100;
+            return `rgb(${red}, 0, ${blue})`;
+        }
 
-            // Función para calcular el radio en función del tamaño del contenedor del mapa
-            function calculateRadius(percentage) {
-                var mapContainer = document.getElementById('map');
-                var width = mapContainer.clientWidth;
-                var height = mapContainer.clientHeight;
-                var minDimension = Math.min(width, height);
-                return (percentage / 100) * minDimension;
-            }
+        function calculateRadius(percentage) {
+            var mapContainer = document.getElementById('map');
+            var width = mapContainer.clientWidth;
+            var height = mapContainer.clientHeight;
+            var minDimension = Math.min(width, height);
+            return (percentage / 100) * minDimension;
+        }
 
-            // Definir el porcentaje del radio
-            var percentage = {{densidad}};
-            var radiusInPixels = calculateRadius(percentage);
+        var percentage = {{densidad}};
+        var radiusInPixels = calculateRadius(percentage);
+        var radiusInMeters = map.containerPointToLatLng([0, 0]).distanceTo(map.containerPointToLatLng([radiusInPixels, 0]));
+        var color = getColorByPercentage(percentage);
 
-            // Convertir el radio de píxeles a metros (esto es aproximado y depende del nivel de zoom y la latitud)
-            var radiusInMeters = map.containerPointToLatLng([0, 0]).distanceTo(map.containerPointToLatLng([radiusInPixels, 0]));
+        var circle = L.circle([{{latitud}}, {{longitud}}], {
+            color: color,
+            fillColor: color,
+            fillOpacity: 0.5,
+            radius: {{densidad}}
+        }).addTo(map);
 
-            // Calcular el color del círculo en función del porcentaje
-            var color = getColorByPercentage(percentage);
-
-            // Agregar un círculo en la ubicación especificada
-            var circle = L.circle([{{latitud}}, {{longitud}}], {
-                color: color,
-                fillColor: color,
-                fillOpacity: 0.5,
-                radius: {{densidad}} // Radio en metros
-            }).addTo(map);
-
-            L.marker([lat, lon]).addTo(map).bindPopup('<b>Paradero {{codigoParadero}}</br>{{latitud}}, {{longitud}}</br> Densidad: {{densidad}}</b>').openPopup();
-        </script>  
-    {{/if}}
-
-    <a href="/" class="btn btn-primary mt-4">Buscar otro paradero</a>
+        L.marker([lat, lon]).addTo(map).bindPopup(`<b>Paradero {{codigoParadero}}</br>{{latitud}}, {{longitud}}</br> Densidad: {{densidad}}</b>`).openPopup();
+    </script>
+{{/if}}
