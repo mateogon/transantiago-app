@@ -148,7 +148,7 @@
                         radius: location.densidad // Radio en metros
                     }).addTo(map);
 
-                    marker.bindPopup(`<b>${location.codigoParadero}</b><br>${location.latitud}, ${location.longitud}<br>${location.densidad}`);
+                    marker.bindPopup(`<b>${location.codigoParadero}</b><br>${location.latitud}, ${location.longitud}<br><b>Densidad: </b>${location.densidad}<br><b> Comuna: ${location.comuna}</br>`);
                     markers.push(marker);
                 } else {
                     console.error('Error en la ubicación:', location.error);

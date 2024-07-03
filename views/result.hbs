@@ -129,7 +129,7 @@
             radius: {{densidad}}
         }).addTo(map);
 
-        L.marker([lat, lon]).addTo(map).bindPopup(`<b>Paradero {{codigoParadero}}</br>{{latitud}}, {{longitud}}</br> Densidad: {{densidad}}</b>`).openPopup();
+        L.marker([lat, lon]).addTo(map).bindPopup(`<b>Paradero {{codigoParadero}}</br>{{latitud}}, {{longitud}}</br> Densidad: {{densidad}}</b></br><b> Comuna: {{comuna}}</b>`).openPopup();
     </script>
     <script>
         function submitForm() {

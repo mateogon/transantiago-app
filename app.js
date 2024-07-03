@@ -152,6 +152,7 @@ app.post('/buscar', async (req, res) => {
     // Buscar el paradero y el valor correspondiente a la hora actual
     const paraderoData = data.find(row => row.paradero === codigoParadero);
     const densidadActual = paraderoData ? (paraderoData[formattedTimeInit] || 0) : 0;
+    const comuna = paraderoData ? (paraderoData['Comuna'] || 0) : 0;
   
     try {
         const response = await axios.get('https://nominatim.openstreetmap.org/search', {
@@ -170,7 +171,8 @@ app.post('/buscar', async (req, res) => {
                 latitud: location.lat,
                 longitud: location.lon,
                 hora: `${formattedTimeInit} a ${formattedTimeFinal}`,
-                densidad: densidadActual
+                densidad: densidadActual,
+                comuna: comuna
             });
         } else {
             res.render('result', {
@@ -229,11 +231,13 @@ app.get('/map', async (req, res) => {
           let paradero = row.codigoParadero
           const paraderoData = dataPredicha.find(row => row.paradero === paradero);
           const densidadActual = paraderoData ? (paraderoData[formattedTimeInit] || 0) : 0;
+          const comuna = paraderoData ? (paraderoData['Comuna'] || 0) : 0;
           let ubicacion = {
               codigoParadero: row.codigoParadero,
               latitud: parseFloat(row.latitud),
               longitud: parseFloat(row.longitud),
               densidad: densidadActual,
+              comuna: comuna
           };
           ubicaciones.push(ubicacion);
         })
