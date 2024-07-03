@@ -3,6 +3,7 @@ const { engine } = require('express-handlebars');
 const axios = require('axios');
 const fs = require('fs');
 const csv = require('csv-parser');
+const path = require('path');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
 const app = express();
@@ -53,15 +54,20 @@ function readCSV(filePath) {
 app.engine('hbs', engine({
     extname: '.hbs',
     defaultLayout: 'main',
-    layoutsDir: __dirname + '/views/layouts/',
-    partialsDir: __dirname + '/views/partials/',
+    layoutsDir: path.join(__dirname, 'views', 'layouts'),
+    partialsDir: path.join(__dirname, 'views', 'partials'),
     helpers: {
       json: function(context) {
           return JSON.stringify(context);
+      },
+      baseUrl: () => {
+        return ''; // Aquí podrías agregar la base URL si es necesario
       }
     }
 }));
 app.set('view engine', 'hbs');
+app.set('views', path.join(__dirname, 'views'));
+
 
 // Función para obtener la ubicación de un paradero y guardar en CSV
 async function obtenerUbicacionYGuardar(codigoParadero) {
@@ -106,9 +112,16 @@ async function obtenerUbicacionYGuardar(codigoParadero) {
 // Middleware para parsear datos del formulario
 app.use(express.urlencoded({ extended: true }));
 
+// Middleware estático para servir archivos estáticos desde la carpeta 'assets'
+app.use(express.static(path.join(__dirname, 'assets')));
+
 // Rutas
 app.get('/', (req, res) => {
     res.render('home');
+});
+
+app.get('/test', (req, res) => {
+  res.render('test', {layout: 'test'});
 });
 
 app.post('/buscar', async (req, res) => {
