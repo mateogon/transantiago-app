@@ -5,13 +5,73 @@
     
             <div class="content-page">
             <div class="container-fluid">
+            <!-- start page title -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box">
+                                <div class="page-title-right">
+                                    <ol class="breadcrumb m-0">
+                                        <li class="breadcrumb-item"><a href="javascript: void(0);">Transantiago App</a></li>
+                                        <li class="breadcrumb-item"><a href="javascript: void(0);">Páginas</a></li>
+                                        <li class="breadcrumb-item active">Buscar</li>
+                                    </ol>
+                                </div>
+                                <h4 class="page-title">Resultado de la búsqueda</h4>
+                            </div>
+                        </div>
+                    </div>
+            <!-- end page title -->
                 <div class="row">
                     <div class="card">
                             <div class="card-body">
                                 <div class="d-flex justify-content-center align-items-center">
                                     <div class="d-flex flex-column text-center"> 
-                                        <h1 class="mt-5 text-center">Resultado de la Búsqueda</h1>
                                         <p><strong>Código del Paradero:</strong> {{codigoParadero}}</p>
+                                        <form id="horaForm" action="/buscar" method="POST" onchange="submitForm()">
+                                            <label for="time" class="form-label">Seleccione una hora:</label>
+                                            <select id="time" name="time" class="form-select">
+                                                <option selected disabled>Seleccione</option>
+                                                <option value="05:30:00">5:30:00</option>
+                                                <option value="06:00:00">6:00:00</option>
+                                                <option value="06:30:00">6:30:00</option>
+                                                <option value="07:00:00">7:00:00</option>
+                                                <option value="07:30:00">7:30:00</option>
+                                                <option value="08:00:00">8:00:00</option>
+                                                <option value="08:30:00">8:30:00</option>
+                                                <option value="09:00:00">9:00:00</option>
+                                                <option value="09:30:00">9:30:00</option>
+                                                <option value="10:00:00">10:00:00</option>
+                                                <option value="10:30:00">10:30:00</option>
+                                                <option value="11:00:00">11:00:00</option>
+                                                <option value="11:30:00">11:30:00</option>
+                                                <option value="12:00:00">12:00:00</option>
+                                                <option value="12:30:00">12:30:00</option>
+                                                <option value="13:00:00">13:00:00</option>
+                                                <option value="13:30:00">13:30:00</option>
+                                                <option value="14:00:00">14:00:00</option>
+                                                <option value="14:30:00">14:30:00</option>
+                                                <option value="15:00:00">15:00:00</option>
+                                                <option value="15:30:00">15:30:00</option>
+                                                <option value="16:00:00">16:00:00</option>
+                                                <option value="16:30:00">16:30:00</option>
+                                                <option value="17:00:00">17:00:00</option>
+                                                <option value="17:30:00">17:30:00</option>
+                                                <option value="18:00:00">18:00:00</option>
+                                                <option value="18:30:00">18:30:00</option>
+                                                <option value="19:00:00">19:00:00</option>
+                                                <option value="19:30:00">19:30:00</option>
+                                                <option value="20:00:00">20:00:00</option>
+                                                <option value="20:30:00">20:30:00</option>
+                                                <option value="21:00:00">21:00:00</option>
+                                                <option value="21:30:00">21:30:00</option>
+                                                <option value="22:00:00">22:00:00</option>
+                                                <option value="22:30:00">22:30:00</option>
+                                                <option value="23:00:00">23:00:00</option>
+                                                <option value="23:30:00">23:30:00</option>
+                                            </select>
+                                            <!-- Campo oculto para un valor predeterminado -->
+                                            <input type="hidden" name="codigoParadero" value={{codigoParadero}}>
+                                        </form>
                                         <p class=""><strong>Hora:</strong> {{hora}}</p>
                                         <div class="w-75 h-75" id="map"></div>
                                      </div>
@@ -38,6 +98,7 @@
             )
         });
 
+        console.log("test");
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
@@ -69,5 +130,10 @@
         }).addTo(map);
 
         L.marker([lat, lon]).addTo(map).bindPopup(`<b>Paradero {{codigoParadero}}</br>{{latitud}}, {{longitud}}</br> Densidad: {{densidad}}</b>`).openPopup();
+    </script>
+    <script>
+        function submitForm() {
+            document.getElementById('horaForm').submit();
+        }
     </script>
 {{/if}}

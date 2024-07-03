@@ -48,7 +48,7 @@ function readCSV(filePath) {
       .on('end', () => resolve(results))
       .on('error', (err) => reject(err));
   });
-}  
+}
 
 // Configurar Handlebars
 app.engine('hbs', engine({
@@ -123,17 +123,35 @@ app.get('/', (req, res) => {
 app.post('/buscar', async (req, res) => {
     const codigoParadero = req.body.codigoParadero;
     const direccionParadero = `${codigoParadero}, Santiago, Chile`;
-    const currentTime = new Date();
-    const currentHour = currentTime.getHours();
-    const currentMinutes = currentTime.getMinutes();
+    // Capturar el parámetro GET horaSeleccionada, si existe
+    const horaSeleccionada = req.body.time;
 
-    // Formatear la hora actual al formato "HH:mm:00"
-    const formattedTimeInit = `${currentHour.toString().padStart(2, '0')}:${(Math.floor(currentMinutes / 30) * 30).toString().padStart(2, '0')}:00`;
-    const formattedTimeFinal = `${currentHour.toString().padStart(2, '0')}:${(Math.floor(currentMinutes / 30) * 30+29).toString().padStart(2, '0')}:59`;
+    let formattedTimeInit, formattedTimeFinal;
+
+    if (horaSeleccionada) {
+      // Utilizar la hora seleccionada en formato "HH:mm:00"
+      formattedTimeInit = `${horaSeleccionada}`;
+      if(horaSeleccionada.substring(0, 1) == 0){
+        formattedTimeInit = horaSeleccionada.substring(1);
+        formattedTimeFinal = `${horaSeleccionada.substring(1, 2)}:${parseInt(horaSeleccionada.substring(4, 5)) + 29}:59`;
+      }
+      else{
+        formattedTimeInit = `${horaSeleccionada}`;
+        formattedTimeFinal = `${horaSeleccionada.substring(0, 2)}:${parseInt(horaSeleccionada.substring(4, 5)) + 29}:59`;
+      }
+    } else {
+      // Utilizar la hora actual en formato "HH:mm:00"
+      const currentTime = new Date();
+      const currentHour = currentTime.getHours();
+      const currentMinutes = currentTime.getMinutes();
+
+      formattedTimeInit = `${currentHour.toString().padStart(2, '0')}:${(Math.floor(currentMinutes / 30) * 30).toString().padStart(2, '0')}:00`;
+      formattedTimeFinal = `${currentHour.toString().padStart(2, '0')}:${(Math.floor(currentMinutes / 30) * 30 + 29).toString().padStart(2, '0')}:59`;
+    }
     const data = await readCSV('predicted_density_matrix.csv');
     // Buscar el paradero y el valor correspondiente a la hora actual
     const paraderoData = data.find(row => row.paradero === codigoParadero);
-    const densidadActual = paraderoData ? paraderoData[formattedTimeInit] : 'No data available';
+    const densidadActual = paraderoData ? (paraderoData[formattedTimeInit] || 0) : 0;
   
     try {
         const response = await axios.get('https://nominatim.openstreetmap.org/search', {
@@ -171,13 +189,30 @@ app.post('/buscar', async (req, res) => {
 
 // Ruta GET para obtener y mostrar las ubicaciones desde el CSV
 app.get('/map', async (req, res) => {
-    const currentTime = new Date();
-    const currentHour = currentTime.getHours();
-    const currentMinutes = currentTime.getMinutes();
+    // Capturar el parámetro GET horaSeleccionada, si existe
+    const horaSeleccionada = req.query.time;
 
-    // Formatear la hora actual al formato "HH:mm:00"
-    const formattedTimeInit = `${currentHour.toString().padStart(2, '0')}:${(Math.floor(currentMinutes / 30) * 30).toString().padStart(2, '0')}:00`;
-    const formattedTimeFinal = `${currentHour.toString().padStart(2, '0')}:${(Math.floor(currentMinutes / 30) * 30+29).toString().padStart(2, '0')}:59`;
+    let formattedTimeInit, formattedTimeFinal;
+
+    if (horaSeleccionada) {
+      // Utilizar la hora seleccionada en formato "HH:mm:00"
+      formattedTimeInit = `${horaSeleccionada}`;
+      if(horaSeleccionada.substring(0, 1) == 0){
+        formattedTimeInit = horaSeleccionada.substring(1);
+        formattedTimeFinal = `${horaSeleccionada.substring(1, 2)}:${parseInt(horaSeleccionada.substring(4, 5)) + 29}:59`;
+      }
+      else{
+        formattedTimeFinal = `${horaSeleccionada.substring(0, 2)}:${parseInt(horaSeleccionada.substring(4, 5)) + 29}:59`;
+      }
+    } else {
+      // Utilizar la hora actual en formato "HH:mm:00"
+      const currentTime = new Date();
+      const currentHour = currentTime.getHours();
+      const currentMinutes = currentTime.getMinutes();
+
+      formattedTimeInit = `${currentHour.toString().padStart(2, '0')}:${(Math.floor(currentMinutes / 30) * 30).toString().padStart(2, '0')}:00`;
+      formattedTimeFinal = `${currentHour.toString().padStart(2, '0')}:${(Math.floor(currentMinutes / 30) * 30 + 29).toString().padStart(2, '0')}:59`;
+    }
     const dataPredicha = await readCSV('predicted_density_matrix.csv');
     try {
       // Verificar si existe el archivo CSV de ubicaciones
@@ -193,12 +228,12 @@ app.get('/map', async (req, res) => {
           // Buscar el paradero y el valor correspondiente a la hora actual
           let paradero = row.codigoParadero
           const paraderoData = dataPredicha.find(row => row.paradero === paradero);
-          const densidadActual = paraderoData ? paraderoData[formattedTimeInit] : 'No data available';
+          const densidadActual = paraderoData ? (paraderoData[formattedTimeInit] || 0) : 0;
           let ubicacion = {
               codigoParadero: row.codigoParadero,
               latitud: parseFloat(row.latitud),
               longitud: parseFloat(row.longitud),
-              densidad: densidadActual
+              densidad: densidadActual,
           };
           ubicaciones.push(ubicacion);
         })
@@ -213,7 +248,7 @@ app.get('/map', async (req, res) => {
           }
 
           // Renderizar la vista con las ubicaciones encontradas
-          res.render('map', { ubicaciones, hora: `${formattedTimeInit} a ${formattedTimeFinal}` });
+          res.render('map', { ubicaciones, hora: `${formattedTimeInit} a ${formattedTimeFinal}`});
         });
   
     } catch (error) {
