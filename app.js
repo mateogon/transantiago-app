@@ -162,6 +162,14 @@ app.post('/buscar', async (req, res) => {
 
 // Ruta GET para obtener y mostrar las ubicaciones desde el CSV
 app.get('/map', async (req, res) => {
+    const currentTime = new Date();
+    const currentHour = currentTime.getHours();
+    const currentMinutes = currentTime.getMinutes();
+
+    // Formatear la hora actual al formato "HH:mm:00"
+    const formattedTimeInit = `${currentHour.toString().padStart(2, '0')}:${(Math.floor(currentMinutes / 30) * 30).toString().padStart(2, '0')}:00`;
+    const formattedTimeFinal = `${currentHour.toString().padStart(2, '0')}:${(Math.floor(currentMinutes / 30) * 30+29).toString().padStart(2, '0')}:59`;
+    const dataPredicha = await readCSV('predicted_density_matrix.csv');
     try {
       // Verificar si existe el archivo CSV de ubicaciones
       if (!fs.existsSync(outputFilePath)) {
@@ -173,7 +181,17 @@ app.get('/map', async (req, res) => {
       fs.createReadStream(outputFilePath)
         .pipe(csv())
         .on('data', (row) => {
-          ubicaciones.push(row);
+          // Buscar el paradero y el valor correspondiente a la hora actual
+          let paradero = row.codigoParadero
+          const paraderoData = dataPredicha.find(row => row.paradero === paradero);
+          const densidadActual = paraderoData ? paraderoData[formattedTimeInit] : 'No data available';
+          let ubicacion = {
+              codigoParadero: row.codigoParadero,
+              latitud: parseFloat(row.latitud),
+              longitud: parseFloat(row.longitud),
+              densidad: densidadActual
+          };
+          ubicaciones.push(ubicacion);
         })
         .on('end', () => {
           // Mostrar las ubicaciones obtenidas en la consola
@@ -186,7 +204,7 @@ app.get('/map', async (req, res) => {
           }
 
           // Renderizar la vista con las ubicaciones encontradas
-          res.render('map', { ubicaciones });
+          res.render('map', { ubicaciones, hora: `${formattedTimeInit} a ${formattedTimeFinal}` });
         });
   
     } catch (error) {

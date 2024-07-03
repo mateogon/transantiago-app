@@ -13,8 +13,6 @@
             const lon = {{longitud}};
             const zoomLevel = 16; // Ajusta el nivel de zoom aquí
 
-            //const map = L.map('map').setView([lat, lon], zoomLevel);
-
             const map = L.map('map', {
             center: [lat, lon], // Coordenadas de Santiago
             zoom: zoomLevel, // Nivel de zoom inicial
@@ -31,23 +29,23 @@
 
             // Función para calcular el color del círculo en función del porcentaje (0 a 100)
             function getColorByPercentage(percentage) {
-            // Interpolación lineal entre rojo (0%) y azul (100%)
-            var red = 255 * (100 - percentage) / 100;
-            var blue = 255 * percentage / 100;
-            return `rgb(${red}, 0, ${blue})`;
+                // Interpolación lineal entre rojo (0%) y azul (100%)
+                var red = 255 * (100 - percentage) / 100;
+                var blue = 255 * percentage / 100;
+                return `rgb(${red}, 0, ${blue})`;
             }
 
             // Función para calcular el radio en función del tamaño del contenedor del mapa
             function calculateRadius(percentage) {
-            var mapContainer = document.getElementById('map');
-            var width = mapContainer.clientWidth;
-            var height = mapContainer.clientHeight;
-            var minDimension = Math.min(width, height);
-            return (percentage / 100) * minDimension;
+                var mapContainer = document.getElementById('map');
+                var width = mapContainer.clientWidth;
+                var height = mapContainer.clientHeight;
+                var minDimension = Math.min(width, height);
+                return (percentage / 100) * minDimension;
             }
 
-            // Definir el porcentaje del radio (por ejemplo, 50% del tamaño más pequeño del contenedor del mapa)
-            var percentage = 50;
+            // Definir el porcentaje del radio
+            var percentage = {{densidad}};
             var radiusInPixels = calculateRadius(percentage);
 
             // Convertir el radio de píxeles a metros (esto es aproximado y depende del nivel de zoom y la latitud)
@@ -64,7 +62,7 @@
                 radius: {{densidad}} // Radio en metros
             }).addTo(map);
 
-            L.marker([lat, lon]).addTo(map).bindPopup('<b>Paradero {{codigoParadero}}</b>').openPopup();
+            L.marker([lat, lon]).addTo(map).bindPopup('<b>Paradero {{codigoParadero}}</br>{{latitud}}, {{longitud}}</br> Densidad: {{densidad}}</b>').openPopup();
         </script>  
     {{/if}}
 
