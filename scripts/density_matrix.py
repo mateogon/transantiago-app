@@ -8,7 +8,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import requests
 import zipfile
-
+import math
+from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 url = "https://www.dtpm.cl/descargas/modelos_y_matrices/Tablas%20de%20subidas%20y%20bajadas%20nov23.zip"
 response = requests.get(url)
@@ -90,3 +91,9 @@ plt.xlabel('Horas')
 plt.ylabel('Paraderos')
 plt.savefig('heatmap_prediction.png')
 plt.show()
+
+
+# Calculate performance metrics
+mae = mean_absolute_error(df1.values, predicted_data)
+mse = mean_squared_error(df1.values, predicted_data)
+rmse = math.sqrt(mse)
