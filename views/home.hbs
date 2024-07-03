@@ -1,3 +1,29 @@
+    <style>
+        .progress-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 25px;
+            overflow: hidden;
+            height: 30px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(to right, red, blue);
+            border-radius: 25px;
+            text-align: center;
+            line-height: 30px; /* same as container height to center the text vertically */
+            color: white;
+            transition: width 0.25s;
+        }
+        .labels {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+    </style>        
+        
         <div class="content-page">
             <div class="container-fluid">
                 <!-- start page title -->
@@ -21,8 +47,19 @@
                     <div class="card">
                             <div class="card-body">
                                 <div class="d-flex justify-content-center align-items-center">
-                                    <div class="d-flex flex-column text-center"> 
-
+                                    <div class="d-flex flex-column text-center">
+                                        <img src="{{baseUrl}}/images/svg/file-searching.svg" height="90" alt="File not found Image">
+                                        <p style="font-size:17px;" class="mt-4"> Al ingresar un código de paradero en el buscador se despliega la aglomeración esperada en este señalada con colores 
+                                        (Ver barra más abajo).</br>
+                                        Además, se puede seleccionar un horario en específico para mayor detalle en la solicitud.</p>
+                                        <div class="progress-container">
+                                            <div class="progress-bar" id="progress-bar"></div>
+                                        </div>
+                                        <div class="labels">
+                                            <span>0%</span>
+                                            <span>50%</span>
+                                            <span>100%</span>
+                                        </div>
                                      </div>
                                 </div>
                             </div>
@@ -31,3 +68,12 @@
             </div>
         </div>
         <!-- END Contenido dinámico -->
+        <script>
+            function updateProgressBar(percentage) {
+                const progressBar = document.getElementById('progress-bar');
+                progressBar.style.width = percentage + '%';
+            }
+
+            // Example usage
+            updateProgressBar(100); // Update to 50% as an example
+        </script>
