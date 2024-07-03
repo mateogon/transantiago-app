@@ -120,10 +120,6 @@ app.get('/', (req, res) => {
     res.render('home');
 });
 
-app.get('/test', (req, res) => {
-  res.render('test', {layout: 'test'});
-});
-
 app.post('/buscar', async (req, res) => {
     const codigoParadero = req.body.codigoParadero;
     const direccionParadero = `${codigoParadero}, Santiago, Chile`;
