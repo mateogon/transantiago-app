@@ -83,6 +83,17 @@
         const minZoomLevel = 13; // Nivel de zoom mínimo permitido
         const maxZoomLevel = 19; // Nivel de zoom máximo permitido
 
+        // Define un nuevo icono personalizado para el paradero de bus
+        const busStopIcon = L.icon({
+            iconUrl: '{{baseUrl}}/images/busStop.svg',  // Ruta de la imagen del icono de paradero
+            iconSize: [32, 32],  // Tamaño del icono (ancho, alto)
+            iconAnchor: [16, 32],
+            popupAnchor: [0, -32]  // Punto donde aparece el popup en relación al icono
+        });
+
+        // Crea un marcador con el icono de paradero de bus
+        // const busStopMarker = L.marker([lat, lon], { icon: busStopIcon }).addTo(map).bindPopup(`<b>Paradero {{codigoParadero}}</br>{{latitud}}, {{longitud}}</br> Densidad: {{densidad}}</b></br><b> Comuna: {{comuna}}</b>`).openPopup();
+
         // Inicializar el mapa con las coordenadas y el nivel de zoom inicial
         var map = L.map('map', {
             center: initialCoordinates,
@@ -129,7 +140,7 @@
         function addMarkers() {
             locations.forEach(function(location) {
                 if (location.latitud && location.longitud) {
-                    var marker = L.marker([location.latitud, location.longitud]);
+                    var marker = L.marker([location.latitud, location.longitud], { icon: busStopIcon });
                     // Definir el porcentaje del radio
                     var percentage = location.densidad;
                     var radiusInPixels = calculateRadius(percentage);

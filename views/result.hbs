@@ -129,8 +129,18 @@
             radius: {{densidad}}
         }).addTo(map);
 
-        L.marker([lat, lon]).addTo(map).bindPopup(`<b>Paradero {{codigoParadero}}</br>{{latitud}}, {{longitud}}</br> Densidad: {{densidad}}</b></br><b> Comuna: {{comuna}}</b>`).openPopup();
+        // Define un nuevo icono personalizado para el paradero de bus
+        const busStopIcon = L.icon({
+            iconUrl: '{{baseUrl}}/images/busStop.svg',  // Ruta de la imagen del icono de paradero
+            iconSize: [32, 32],  // Tamaño del icono (ancho, alto)
+            iconAnchor: [16, 16],  // Punto del icono que corresponde a la posición en el mapa
+            popupAnchor: [0, -32]  // Punto donde aparece el popup en relación al icono
+        });
+
+        // Crea un marcador con el icono de paradero de bus
+        const busStopMarker = L.marker([lat, lon], { icon: busStopIcon }).addTo(map).bindPopup(`<b>Paradero {{codigoParadero}}</br>{{latitud}}, {{longitud}}</br> Densidad: {{densidad}}</b></br><b> Comuna: {{comuna}}</b>`).openPopup();
     </script>
+
     <script>
         function submitForm() {
             document.getElementById('horaForm').submit();
