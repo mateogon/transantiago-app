@@ -160,7 +160,7 @@ async function obtenerDatosYProcesar(url) {
           coordinates: [paraderos[i][1], paraderos[i][0]] // long, lat
         },
         properties: {
-          description: `Paradero ${data.ida.paraderos[i].cod}`
+          description: `${data.ida.paraderos[i].cod}`
         }
       });
 
@@ -172,7 +172,7 @@ async function obtenerDatosYProcesar(url) {
           coordinates: segmentoPath.map(([lat, lon]) => [lon, lat])
         },
         properties: {
-          description: `Segmento entre paradero ${data.ida.paraderos[i].cod} y ${data.ida.paraderos[i + 1].cod}`
+          description: `${data.ida.paraderos[i].cod} ${data.ida.paraderos[i + 1].cod}`
         }
       });
 
@@ -184,7 +184,7 @@ async function obtenerDatosYProcesar(url) {
           coordinates: [paraderos[i + 1][1], paraderos[i + 1][0]] // long, lat
         },
         properties: {
-          description: `Paradero ${data.ida.paraderos[i+1].cod}`
+          description: `${data.ida.paraderos[i+1].cod}`
         }
       });
     }
