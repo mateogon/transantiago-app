@@ -39,7 +39,6 @@ async function fetchAndTransformData(apiUrl) {
 
 
 // Metro
-
 async function obtenerEstadosMetro(url) {
     try {
       const response = await axios.get(url);

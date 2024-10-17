@@ -45,8 +45,10 @@ router.get('/recorrido/:id', async (req, res) => {
         const data = await obtenerDatosYProcesar(paso);
 
         if(data){
-            console.log('OK');
+            //console.log(data);
             res.status(200).json(data);
+            const puntos = data.features.filter(f => f.geometry.type === 'Point');
+            // res.render('rutas', { puntos , geoJson: JSON.stringify(data), latitud: puntos[0].geometry.coordinates[1], longitud: puntos[0].geometry.coordinates[0]  });
         } else {
             res.status(404).json( { message: 'Datos no encontrados'} );
         }
