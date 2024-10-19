@@ -1,16 +1,12 @@
 const express = require('express');
-const axios = require('axios');
 const router = express.Router();
-const { Client } = require('pg');
+const axios = require('axios');
 
-const espera = "https://api.xor.cl/red/bus-stop/";
+const metro = "https://www.metro.cl/api/estadoRedDetalle.php";
 
-router.get('/espera/:id', async (req, res) => {
-    const paradero = req.params.id;
-    const tiempoEspera = espera + paradero;
-
+router.get('/metro', async (req, res) => {
     try {
-        const data = await obtenerLlegadas(tiempoEspera);
+        const data = await obtenerEstadosMetro(metro);
 
         if(data){
             console.log('OK');
@@ -24,8 +20,8 @@ router.get('/espera/:id', async (req, res) => {
     }
 });
 
-// Procesar llegadas
-async function obtenerLlegadas(url) {
+// Metro
+async function obtenerEstadosMetro(url) {
     try {
       const response = await axios.get(url);
       const data = response.data;
@@ -42,23 +38,25 @@ async function obtenerLlegadas(url) {
   
   function obtenerDatosServicios(data) {
     const resultado = [];
+
+    const lineas = Object.keys(data);
   
-    data.services.forEach((servicio) => {
-      const servicioId = servicio.id;
+    lineas.forEach((linea) => {
+      const estaciones = data[linea].estaciones;
   
-      servicio.buses.forEach((bus) => {
-        const busData = {
-          servicio: servicioId,
-          bus_id: bus.id,
-          metros_distancia: bus.meters_distance,
-          tiempo_llegada_min: bus.min_arrival_time,
-          tiempo_llegada_max: bus.max_arrival_time
+      estaciones.forEach((estacion) => {
+        const estacionData = {
+          nombre: estacion.nombre,
+          codigo: estacion.codigo,
+          estado: estacion.estado,
+          combinacion: estacion.combinacion,
+          linea: linea
         };
-        resultado.push(busData);
+        resultado.push(estacionData);
       });
     });
   
     return resultado;
   }
 
-  module.exports = router;
+module.exports = router;
