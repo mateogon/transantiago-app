@@ -7,8 +7,17 @@ const path = require('path');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const { Buffer } = require('buffer');
 
-const metadata = require('./metadata');
+// Importar archivos de metadata
+const recorrido = require('./metadata/recorrido');
+const subidas = require('./metadata/subidas');
+const espera = require('./metadata/espera');
+const aglomeracion = require('./metadata/aglomeracion');
+
+// Importar archivos de amenazas
 const amenazas = require('./amenazas');
+const metro = require('./threats/metro');
+const alerts = require('./threats/alerts');
+const traffic = require('./threats/traffic');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -482,8 +491,19 @@ app.get('/paradero/:stopid', getSession, obtenerUbicacion, (req, res) => {
 });
 
 // Usar rutas
-app.use('/', metadata);
 app.use('/', amenazas);
+
+// Metadata
+app.use('/metadata', recorrido);
+app.use('/metadata', subidas);
+app.use('/metadata', espera);
+app.use('/metadata', aglomeracion);
+
+
+// Amenazas
+app.use('/threats', metro);
+app.use('/threats', alerts);
+app.use('/threats', traffic);
 
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
