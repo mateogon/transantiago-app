@@ -18,6 +18,7 @@ const amenazas = require('./amenazas');
 const metro = require('./threats/metro');
 const alerts = require('./threats/alerts');
 const traffic = require('./threats/traffic');
+const trafficGoogle = require('./threats/trafficGoogle');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -504,6 +505,7 @@ app.use('/metadata', aglomeracion);
 app.use('/threats', metro);
 app.use('/threats', alerts);
 app.use('/threats', traffic);
+app.use('/threats', trafficGoogle);
 
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
