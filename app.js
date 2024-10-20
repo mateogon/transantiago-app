@@ -14,10 +14,10 @@ const espera = require('./metadata/espera');
 const aglomeracion = require('./metadata/aglomeracion');
 
 // Importar archivos de amenazas
-const amenazas = require('./amenazas');
 const metro = require('./threats/metro');
 const alerts = require('./threats/alerts');
 const traffic = require('./threats/traffic');
+const disponibilidad = require('./threats/disponibilidad');
 const trafficGoogle = require('./threats/trafficGoogle');
 
 const app = express();
@@ -492,7 +492,6 @@ app.get('/paradero/:stopid', getSession, obtenerUbicacion, (req, res) => {
 });
 
 // Usar rutas
-app.use('/', amenazas);
 
 // Metadata
 app.use('/metadata', recorrido);
@@ -505,6 +504,7 @@ app.use('/metadata', aglomeracion);
 app.use('/threats', metro);
 app.use('/threats', alerts);
 app.use('/threats', traffic);
+app.use('/threats', disponibilidad);
 app.use('/threats', trafficGoogle);
 
 app.listen(PORT, () => {
