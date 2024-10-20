@@ -7,6 +7,9 @@ const path = require('path');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const { Buffer } = require('buffer');
 
+// Importar Archivos Viejos
+const old = require('./appOld')
+
 // Importar archivos de metadata
 const recorrido = require('./metadata/recorrido');
 const subidas = require('./metadata/subidas');
@@ -23,10 +26,7 @@ const trafficGoogle = require('./threats/trafficGoogle');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Nombre del archivo CSV que quieres leer
-const inputFilePath = 'paraderos.csv';
 // Nombre del archivo CSV para guardar las ubicaciones
-const outputFilePath = 'ubicaciones_paraderos.csv';
 const outputFilePath2 = 'ubicaciones_paraderos2.csv';
 
 // Array para almacenar los datos del CSV
@@ -36,24 +36,6 @@ const BASE_URL = "https://www.red.cl/predictor/prediccion?t=%s&codsimt=%s&codser
 const SESSION_URL = "https://www.red.cl/planifica-tu-viaje/cuando-llega/"
 
 let session = '';
-
-// Función para cargar los nombres de los códigos de paraderos desde el CSV
-async function cargarCodigosParaderosCSV() {
-    return new Promise((resolve, reject) => {
-      fs.createReadStream(inputFilePath)
-        .pipe(csv())
-        .on('data', (row) => {
-          codigosParaderos.push(row.paradero); // Ajusta según el nombre de la columna en tu CSV
-        })
-        .on('end', () => {
-          console.log('Códigos de paradero cargados desde el CSV:', codigosParaderos);
-          resolve();
-        })
-        .on('error', (error) => {
-          reject(error);
-        });
-    });
-  }
 
 async function cargarCodigosParaderos() {
   try {
@@ -114,47 +96,6 @@ app.engine('hbs', engine({
 }));
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
-
-
-// Función para obtener la ubicación de un paradero y guardar en CSV (OUTDATED)
-async function obtenerUbicacionYGuardarCSV(codigoParadero) {
-    const direccionParadero = `${codigoParadero}, Santiago, Chile`;
-  
-    try {
-      const response = await axios.get('https://nominatim.openstreetmap.org/search', {
-        params: {
-          q: direccionParadero,
-          format: 'json',
-          addressdetails: 1,
-          limit: 1
-        }
-      });
-  
-      if (response.data && response.data.length > 0) {
-        const location = response.data[0];
-        const csvWriter = createCsvWriter({
-          path: outputFilePath,
-          header: [
-            { id: 'codigoParadero', title: 'codigoParadero' },
-            { id: 'latitud', title: 'latitud' },
-            { id: 'longitud', title: 'longitud' }
-          ],
-          append: fs.existsSync(outputFilePath) // Append si el archivo ya existe
-        });
-  
-        const records = [{ codigoParadero, latitud: location.lat, longitud: location.lon }];
-        await csvWriter.writeRecords(records); // Escribir el registro en el CSV
-  
-        return { codigoParadero, latitud: location.lat, longitud: location.lon };
-      } else {
-        console.error(`No se encontró información para el paradero ${codigoParadero}`);
-        return { codigoParadero, error: 'No se encontró información para el paradero' };
-      }
-    } catch (error) {
-      console.error(`Error al obtener la ubicación del paradero ${codigoParadero}:`, error);
-      return { codigoParadero, error: 'Hubo un error al obtener la información del paradero' };
-    }
-  }
 
 // Función para obtener la ubicación de un paradero y lo almacena
 async function obtenerUbicacionYGuardar(codigoParadero) {
@@ -246,75 +187,6 @@ app.use(express.static(path.join(__dirname, 'assets')));
 // Rutas
 app.get('/', (req, res) => {
     res.render('home');
-});
-
-app.post('/buscarOld', async (req, res) => {
-    const codigoParadero = req.body.codigoParadero;
-    const direccionParadero = `${codigoParadero}, Santiago, Chile`;
-    // Capturar el parámetro GET horaSeleccionada, si existe
-    const horaSeleccionada = req.body.time;
-
-    let formattedTimeInit, formattedTimeFinal;
-
-    if (horaSeleccionada) {
-      // Utilizar la hora seleccionada en formato "HH:mm:00"
-      formattedTimeInit = `${horaSeleccionada}`;
-      if(horaSeleccionada.substring(0, 1) == 0){
-        formattedTimeInit = horaSeleccionada.substring(1);
-        formattedTimeFinal = `${horaSeleccionada.substring(1, 2)}:${parseInt(horaSeleccionada.substring(4, 5)) + 29}:59`;
-      }
-      else{
-        formattedTimeInit = `${horaSeleccionada}`;
-        formattedTimeFinal = `${horaSeleccionada.substring(0, 2)}:${parseInt(horaSeleccionada.substring(4, 5)) + 29}:59`;
-      }
-    } else {
-      // Utilizar la hora actual en formato "HH:mm:00"
-      const currentTime = new Date();
-      const currentHour = currentTime.getHours();
-      const currentMinutes = currentTime.getMinutes();
-
-      formattedTimeInit = `${currentHour.toString().padStart(2, '0')}:${(Math.floor(currentMinutes / 30) * 30).toString().padStart(2, '0')}:00`;
-      formattedTimeFinal = `${currentHour.toString().padStart(2, '0')}:${(Math.floor(currentMinutes / 30) * 30 + 29).toString().padStart(2, '0')}:59`;
-    }
-    const data = await readCSV('predicted_density_matrix.csv');
-    // Buscar el paradero y el valor correspondiente a la hora actual
-    const paraderoData = data.find(row => row.paradero === codigoParadero);
-    const densidadActual = paraderoData ? (paraderoData[formattedTimeInit] || 0) : 0;
-    const comuna = paraderoData ? (paraderoData['Comuna'] || 0) : 0;
-  
-    try {
-        const response = await axios.get('https://nominatim.openstreetmap.org/search', {
-            params: {
-                q: direccionParadero,
-                format: 'json',
-                addressdetails: 1,
-                limit: 1
-            }
-        });
-
-        if (response.data && response.data.length > 0) {
-            const location = response.data[0];
-            res.render('result', {
-                codigoParadero,
-                latitud: location.lat,
-                longitud: location.lon,
-                hora: `${formattedTimeInit} a ${formattedTimeFinal}`,
-                densidad: densidadActual,
-                comuna: comuna
-            });
-        } else {
-            res.render('result', {
-                codigoParadero,
-                error: 'No se encontró información para el paradero'
-            });
-        }
-    } catch (error) {
-        console.error('Error al obtener la ubicación del paradero:', error);
-        res.render('result', {
-            codigoParadero,
-            error: 'Hubo un error al obtener la información del paradero'
-        });
-    }
 });
 
 app.post('/buscar', getSession , obtenerUbicacion, async (req, res) => {
@@ -435,31 +307,6 @@ app.get('/map', async (req, res) => {
       res.status(500).send('Error al leer el archivo CSV de ubicaciones.');
     }
   });
-
-// Ruta POST para procesar la obtención de ubicaciones y guardar en CSV
-app.get('/obtener-ubicaciones-csv', async (req, res) => {
-    try {
-      await cargarCodigosParaderosCSV(); // Cargar los nombres de los códigos de paradero desde el CSV
-  
-      if (codigosParaderos.length === 0) {
-        return res.status(400).send('No se encontraron códigos de paradero.');
-      }
-  
-      const ubicaciones = [];
-  
-      // Obtener y guardar la ubicación de cada paradero
-      for (const codigoParadero of codigosParaderos) {
-        const ubicacion = await obtenerUbicacionYGuardarCSV(codigoParadero);
-        ubicaciones.push(ubicacion);
-      }
-  
-      res.json({ message: 'Ubicaciones obtenidas y guardadas exitosamente.' });
-  
-    } catch (error) {
-      console.error('Error al obtener y guardar ubicaciones:', error);
-      res.status(500).json({ error: 'Hubo un error al procesar la solicitud.' });
-    }
-  });
   
 // Ruta GET para procesar la obtención de ubicaciones y guardar en CSV
 app.get('/obtener-ubicaciones', getSession ,async (req, res) => {
@@ -492,6 +339,8 @@ app.get('/paradero/:stopid', getSession, obtenerUbicacion, (req, res) => {
 });
 
 // Usar rutas
+
+app.use('/old', old);
 
 // Metadata
 app.use('/metadata', recorrido);

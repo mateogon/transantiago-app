@@ -1,3 +1,7 @@
+const { Client } = require('pg');
+const router = express.Router();
+require('dotenv').config();
+
 // Configuración de conexión a PostgreSQL usando variables de entorno
 const client = new Client({
     user: process.env.DB_USER,
@@ -7,21 +11,39 @@ const client = new Client({
     port: process.env.DB_PORT,
 });
 
-async function insertData(data) {
-    for (const row of data) {
-      // Obtener las claves (nombres de las columnas) y valores
-      const columns = Object.keys(row);
-      const values = Object.values(row);
-  
-      // Crear una consulta dinámica
-      const placeholders = columns.map((_, index) => `$${index + 1}`).join(', ');
-      const query = `INSERT INTO subidas (${columns.join(', ')}) VALUES (${placeholders}) RETURNING *`;
-  
-      try {
-        const res = await client.query(query, values);
-        console.log('Fila insertada:', res.rows[0]);
-      } catch (err) {
-        console.error('Error al insertar la fila:', err);
-      }
-    }
+async function insertData(instruccion) {
+  const { tabla, datos } = instruccion;
+
+  // Verifica que haya datos y tabla definidos
+  if (!tabla || !datos || datos.length === 0) {
+    throw new Error('La tabla o los datos no están definidos correctamente.');
   }
+
+  // Armar dinámicamente las columnas y los valores
+  const columnas = Object.keys(datos[0]); // Asumimos que todas las entradas tienen las mismas columnas
+  const valores = datos.map((dato) => Object.values(dato));
+
+  // Crear la consulta dinámica
+  const placeholders = valores.map(
+    (valor, i) => `(${valor.map((_, j) => `$${i * valor.length + j + 1}`).join(', ')})`
+  ).join(', ');
+
+  const query = `
+    INSERT INTO ${tabla} (${columnas.join(', ')})
+    VALUES ${placeholders}
+    RETURNING id;
+  `;
+
+  const flatValues = valores.flat(); // Aplanar el array de valores para pasarlo al query
+
+  try {
+    const res = await client.query(query, flatValues);
+    console.log('Datos almacenados con éxito en la tabla', tabla, 'con IDs:', res.rows.map(row => row.id));
+    return res.rows;
+  } catch (err) {
+    console.error('Error al almacenar los datos:', err);
+    throw err;
+  }
+}
+
+module.exports = router;
