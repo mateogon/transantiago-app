@@ -1,4 +1,6 @@
 # .gitignore
 /node_modules
+metadata/*/
+!metadata/*.js
 package-lock.json
 .env

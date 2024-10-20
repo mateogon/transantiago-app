@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 require('dotenv').config();
-const { Client } = require('pg');
 const unzipper = require('unzipper');
 const xlsb = require('xlsx');
 const path = require('path');

@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 require('dotenv').config();
-const { Client } = require('pg');
 const fs = require('fs');
 const csv = require('csv-parser');
 
