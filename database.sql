@@ -158,7 +158,7 @@ CREATE TABLE metro (
     codigo VARCHAR(10) NOT NULL,             -- Código único de la estación
     estado BOOLEAN NOT NULL,                 -- Estado (1: en funcionamiento, 0: fuera de servicio)
     combinacion VARCHAR(50),                 -- Línea de combinación (si la hay)
-    linea VARCHAR(10) NOT NULL               -- Línea de la estación                        -- Campo para almacenar datos adicionales si es necesario
+    linea VARCHAR(10) NOT NULL               -- Línea de la estación
 );
 --------------------------------------------------------------------
 #trafico
