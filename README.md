@@ -12,6 +12,16 @@ Antes de comenzar, asegúrate de tener Node.js y npm instalados en tu máquina. 
    ```bash
    npm install
    ```   
+## Creación de variables de entorno
+Para poder utilizar esta aplicación sin problemas se debe crear el archivp `.env` en la carpeta raíz con los siguientes datos
+   ```bash
+   DB_USER=<USUARIO_POSTGRES>
+   DB_HOST=<HOST_DE_SERVICIO_POSTGRES>
+   DB_DATABASE=<BASE_DE_DATOS_A_UTILIZAR_EN_POSTGRES>
+   DB_PASSWORD=<PASSCODE_DE_USUARIO_POSTGRES>
+   DB_PORT=<PUERTO_DEL_SERVICIO_POSTGRES>
+   API_KEY=<API_KEY_DE_GOOGLE_CLOUD_CONSOLE>
+   ```
 
 ## Ejecución
 
