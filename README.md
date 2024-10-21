@@ -13,7 +13,7 @@ Antes de comenzar, asegúrate de tener Node.js y npm instalados en tu máquina. 
    npm install
    ```   
 ## Creación de variables de entorno
-Para poder utilizar esta aplicación sin problemas se debe crear el archivp `.env` en la carpeta raíz con los siguientes datos
+Para poder utilizar esta aplicación sin problemas se debe crear el archivo `.env` en la carpeta raíz con los siguientes datos
    ```bash
    DB_USER=<USUARIO_POSTGRES>
    DB_HOST=<HOST_DE_SERVICIO_POSTGRES>
