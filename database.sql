@@ -1,19 +1,19 @@
-#Extensión para GeoJson
+-- Extensión para GeoJson
 CREATE EXTENSION IF NOT EXISTS postgis;
 
-#Extensión para dijkstra
+-- Extensión para dijkstra
 CREATE EXTENSION IF NOT EXISTS pgrouting;
 
-#Extensión para UUID
+-- Extensión para UUID
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 --------------------------------------------------------------
-#Paraderos
+-- Paraderos
 CREATE TABLE paraderos (
     paradero VARCHAR(10) PRIMARY KEY,
     geom GEOMETRY(Point, 4326)
 );
 --------------------------------------------------------------
-#Recorridos
+-- Recorridos
 CREATE TABLE recorridos (
     id SERIAL PRIMARY KEY,
     origen VARCHAR(10) REFERENCES paraderos(paradero),
@@ -22,7 +22,7 @@ CREATE TABLE recorridos (
     geom GEOMETRY(LineString, 4326)
 );
 --------------------------------------------------------------
-#Aglomeracion
+-- Aglomeracion
 CREATE TABLE aglomeracion (
     paradero VARCHAR(255) PRIMARY KEY,
     Comuna VARCHAR(255),
@@ -65,50 +65,50 @@ CREATE TABLE aglomeracion (
     "23:30:00" FLOAT
 );
 --------------------------------------------------------------
-#Subidas
+-- Subidas
 CREATE TABLE subidas (
     paradero VARCHAR(255) PRIMARY KEY,
     Comuna VARCHAR(255),
-    "5:30:00" INT,
-    "6:00:00" INT,
-    "6:30:00" INT,
-    "7:00:00" INT,
-    "7:30:00" INT,
-    "8:00:00" INT,
-    "8:30:00" INT,
-    "9:00:00" INT,
-    "9:30:00" INT,
-    "10:00:00" INT,
-    "10:30:00" INT,
-    "11:00:00" INT,
-    "11:30:00" INT,
-    "12:00:00" INT,
-    "12:30:00" INT,
-    "13:00:00" INT,
-    "13:30:00" INT,
-    "14:00:00" INT,
-    "14:30:00" INT,
-    "15:00:00" INT,
-    "15:30:00" INT,
-    "16:00:00" INT,
-    "16:30:00" INT,
-    "17:00:00" INT,
-    "17:30:00" INT,
-    "18:00:00" INT,
-    "18:30:00" INT,
-    "19:00:00" INT,
-    "19:30:00" INT,
-    "20:00:00" INT,
-    "20:30:00" INT,
-    "21:00:00" INT,
-    "21:30:00" INT,
-    "22:00:00" INT,
-    "22:30:00" INT,
-    "23:00:00" INT,
-    "23:30:00" INT
+    "5:30:00" FLOAT,
+    "6:00:00" FLOAT,
+    "6:30:00" FLOAT,
+    "7:00:00" FLOAT,
+    "7:30:00" FLOAT,
+    "8:00:00" FLOAT,
+    "8:30:00" FLOAT,
+    "9:00:00" FLOAT,
+    "9:30:00" FLOAT,
+    "10:00:00" FLOAT,
+    "10:30:00" FLOAT,
+    "11:00:00" FLOAT,
+    "11:30:00" FLOAT,
+    "12:00:00" FLOAT,
+    "12:30:00" FLOAT,
+    "13:00:00" FLOAT,
+    "13:30:00" FLOAT,
+    "14:00:00" FLOAT,
+    "14:30:00" FLOAT,
+    "15:00:00" FLOAT,
+    "15:30:00" FLOAT,
+    "16:00:00" FLOAT,
+    "16:30:00" FLOAT,
+    "17:00:00" FLOAT,
+    "17:30:00" FLOAT,
+    "18:00:00" FLOAT,
+    "18:30:00" FLOAT,
+    "19:00:00" FLOAT,
+    "19:30:00" FLOAT,
+    "20:00:00" FLOAT,
+    "20:30:00" FLOAT,
+    "21:00:00" FLOAT,
+    "21:30:00" FLOAT,
+    "22:00:00" FLOAT,
+    "22:30:00" FLOAT,
+    "23:00:00" FLOAT,
+    "23:30:00" FLOAT
 );
 --------------------------------------------------------------
-#Llegadas
+-- Llegadas
 CREATE TABLE espera_bus (
     id SERIAL PRIMARY KEY,
     servicio VARCHAR(10),
@@ -118,7 +118,7 @@ CREATE TABLE espera_bus (
     tiempo_llegada_max INTEGER
 );
 ---------------------------------------------------------------
-#Alertas
+-- Alertas
 CREATE TABLE alertas (
     id SERIAL PRIMARY KEY,
     country VARCHAR(2),                 -- Código de país
@@ -138,7 +138,7 @@ CREATE TABLE alertas (
     geom GEOMETRY(Point, 4326)       -- Geometría espacial con el sistema de coordenadas WGS84
 );
 ----------------------------------------------------------------
-#Disponibilidad / Congestión
+-- Disponibilidad / Congestión
 CREATE TABLE disponibilidad (
     id SERIAL PRIMARY KEY,
     to_name VARCHAR(255) NOT NULL,        -- Nombre del origen del tramo
@@ -151,7 +151,7 @@ CREATE TABLE disponibilidad (
     length INTEGER                     -- Longitud del tramo en metros
 );
 ------------------------------------------------------------------
-#estaciones metro
+-- estaciones metro
 CREATE TABLE metro (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(255) NOT NULL,            -- Nombre de la estación
@@ -161,14 +161,14 @@ CREATE TABLE metro (
     linea VARCHAR(10) NOT NULL               -- Línea de la estación
 );
 --------------------------------------------------------------------
-#trafico
+-- trafico
 CREATE TABLE trafico (
     id SERIAL PRIMARY KEY,
     geom GEOMETRY(LineString, 4326),
     descripcion TEXT
 );
 ---------------------------------------------------------------------
-#trafico google
+-- trafico google
 CREATE TABLE rutas_transporte (
     id SERIAL PRIMARY KEY,
     lugar_inicio VARCHAR(255),                      -- Dirección de inicio
