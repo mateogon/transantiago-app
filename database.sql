@@ -183,3 +183,9 @@ CREATE TABLE rutas_transporte (
     paradas INTEGER,                                -- Número de paradas
     ruta GEOGRAPHY(LINESTRING, 4326)                -- Línea poligonal de la ruta completa (Polyline)
 );
+
+-------------------------------------------------------------------
+-- servicios
+CREATE TABLE servicios (
+    id VARCHAR(10) PRIMARY KEY
+);

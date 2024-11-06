@@ -12,6 +12,7 @@ require("dotenv").config();
 
 // Importar el servicio de paraderos
 const paraderosService = require("./service/paraderosService");
+const serviciosService = require("./service/serviciosService");
 
 // Importar Archivos Viejos
 const old = require("./appOld");
@@ -306,6 +307,7 @@ app.use("/threats", trafficGoogle);
 app.get("/actualizar-datos", async (req, res) => {
   try {
     await importarDataSubidas();
+    await serviciosService.importarServicios();
     res.status(200).json({
       message: "Datos actualizados exitosamente en la base de datos.",
     });

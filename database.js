@@ -1,16 +1,19 @@
-const { Client } = require('pg');
+const { Pool } = require('pg');
 const express = require("express");
 const router = express.Router();
 require('dotenv').config();
+require('dotenv').config();
+const { Buffer } = require('buffer');
 
-// Configuración de conexión a PostgreSQL usando variables de entorno
-const client = new Client({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_DATABASE,
-    password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT,
+// Configurar el pool de conexiones a PostgreSQL usando variables de entorno
+const pool = new Pool({
+  user: process.env.DB_USER,         // Usuario de la base de datos
+  host: process.env.DB_HOST,         // Host de la base de datos
+  database: process.env.DB_DATABASE, // Nombre de la base de datos
+  password: process.env.DB_PASSWORD, // Contraseña de la base de datos
+  port: process.env.DB_PORT,         // Puerto de la base de datos
 });
+
 
 async function insertData(instruccion) {
   const { tabla, datos } = instruccion;
@@ -38,7 +41,7 @@ async function insertData(instruccion) {
   const flatValues = valores.flat(); // Aplanar el array de valores para pasarlo al query
 
   try {
-    const res = await client.query(query, flatValues);
+    const res = await pool.query(query, flatValues);
     console.log('Datos almacenados con éxito en la tabla', tabla, 'con IDs:', res.rows.map(row => row.id));
     return res.rows;
   } catch (err) {
@@ -47,4 +50,4 @@ async function insertData(instruccion) {
   }
 }
 
-module.exports = router;
+module.exports = { router, pool };
