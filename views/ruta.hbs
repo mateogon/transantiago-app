@@ -1,0 +1,41 @@
+<!-- views/ruta.hbs -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruta de Micro {{busCode}}</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+    <h1>Ruta de la Micro {{busCode}}</h1>
+    <div id="map" style="height: 80vh; width: 100%;"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        const routeData = {{{routeData}}}; // Datos de la ruta en formato GeoJSON
+
+        // Inicializar el mapa
+        const map = L.map('map').setView([-33.4372, -70.6506], 12); // Centrado en Santiago, Chile
+
+        // Añadir capa base de OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Iterar sobre los features de GeoJSON para añadir puntos y líneas al mapa
+        routeData.features.forEach((feature) => {
+            if (feature.geometry.type === "Point") {
+                // Añadir un marcador en cada paradero
+                const [lon, lat] = feature.geometry.coordinates;
+                L.marker([lat, lon]).addTo(map).bindPopup(`<b>Paradero:</b> ${feature.properties.description}`);
+            } else if (feature.geometry.type === "LineString") {
+                // Añadir una línea para el recorrido de la micro
+                const coordinates = feature.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                L.polyline(coordinates, { color: 'blue' }).addTo(map);
+            }
+        });
+    </script>
+</body>
+</html>

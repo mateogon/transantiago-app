@@ -12,7 +12,10 @@ const old = require("./appOld");
 
 // Importar archivos de metadata
 const recorrido = require("./metadata/recorrido");
-const { router: subidasRouter, importData } = require("./metadata/subidas");
+const {
+  router: subidasRouter,
+  importarDataSubidas,
+} = require("./metadata/subidas");
 const espera = require("./metadata/espera");
 const aglomeracion = require("./metadata/aglomeracion");
 
@@ -354,6 +357,21 @@ app.get("/map", async (req, res) => {
     res.status(500).send("Error al leer el archivo CSV de ubicaciones.");
   }
 });
+// Ruta para renderizar el mapa de la ruta específica
+app.get('/ver-ruta/:id', async (req, res) => {
+  const busCode = req.params.id; // Move busCode declaration here
+  try {
+      console.log('Obteniendo datos de la micro', req.params);
+      console.log(busCode);
+      const response = await axios.get(`http://localhost:3000/metadata/recorrido/${busCode}`);
+      const routeData = response.data;
+      
+      res.render('ruta', { routeData: JSON.stringify(routeData), busCode });
+  } catch (error) {
+      console.error(`Error al obtener datos de la micro ${busCode}:`, error); // busCode is now defined here
+      res.status(500).send('No se pudo obtener la ruta.');
+  }
+});
 
 // Ruta GET para procesar la obtención de ubicaciones y guardar en CSV
 app.get("/obtener-ubicaciones", getSession, async (req, res) => {
@@ -403,7 +421,7 @@ app.use("/threats", trafficGoogle);
 // Ruta para cargar datos en la base de datos manualmente
 app.get("/actualizar-datos", async (req, res) => {
   try {
-    await importData();
+    await importarDataSubidas();
     res.status(200).json({
       message: "Datos actualizados exitosamente en la base de datos.",
     });

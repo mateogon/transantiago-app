@@ -21,7 +21,7 @@ const subidasURL =
   "https://www.dtpm.cl/descargas/modelos_y_matrices/tablas_subidas_bajadas_abr24.zip";
 
 // Función para importar datos en la base de datos
-async function importData() {
+async function importarDataSubidas() {
   const result = await pool.query("SELECT COUNT(*) FROM subidas");
   if (parseInt(result.rows[0].count) > 0) {
     console.log("Datos ya existen en la base de datos.");
@@ -102,6 +102,7 @@ async function importData() {
 
 // Función para procesar el archivo zip y extraer los datos
 async function downloadAndProcessZip(url) {
+  // Definir rutas de archivo
   const zipPath = path.join(__dirname, "tablas_subidas_bajadas_abr24.zip");
   const xlsbPath = path.join(
     __dirname,
@@ -109,7 +110,9 @@ async function downloadAndProcessZip(url) {
   );
 
   try {
+    // Paso 1: Descargar el archivo ZIP
     const response = await axios({ url, responseType: "stream" });
+    // Paso 2: Extraer el archivo XLSB
     await new Promise((resolve, reject) => {
       const writer = fs.createWriteStream(zipPath);
       response.data.pipe(writer);
@@ -121,11 +124,14 @@ async function downloadAndProcessZip(url) {
       .createReadStream(zipPath)
       .pipe(unzipper.Extract({ path: __dirname }))
       .promise();
+
+    // Paso 3: Leer y procesar el archivo XLSB
     const workbook = xlsb.readFile(xlsbPath);
     const sheetName = workbook.SheetNames[1];
     const sheet = workbook.Sheets[sheetName];
+    // Convertir a JSON y saltar las primeras dos filas
     let data = xlsb.utils.sheet_to_json(sheet, { header: 1 }).slice(2);
-
+    // Definir las columnas que queremos conservar
     const indicesRelevantes = {
       Comuna: 1,
       paradero: 2,
@@ -167,7 +173,7 @@ async function downloadAndProcessZip(url) {
       "23:00:00": 53,
       "23:30:00": 54,
     };
-
+    // Paso 4: Sumar valores y filtrar por paradero
     const resultado = data.reduce((acumulador, fila) => {
       const paradero = fila[indicesRelevantes["paradero"]];
       if (paradero == "" || paradero == null) return acumulador;
@@ -180,9 +186,9 @@ async function downloadAndProcessZip(url) {
       }
 
       Object.keys(indicesRelevantes)
-        .slice(2)
+        .slice(2) // Desde el tercer índice
         .forEach((columna) => {
-          const valor = fila[indicesRelevantes[columna]];
+          const valor = fila[indicesRelevantes[columna]]; // Obtener el valor
           acumulador[paradero].valores[columna] =
             (acumulador[paradero].valores[columna] || 0) +
             (valor !== undefined ? valor : 0);
@@ -190,7 +196,7 @@ async function downloadAndProcessZip(url) {
 
       return acumulador;
     }, {});
-
+    // Paso 5: Devolver el resultado en formato JSON
     return resultado;
   } catch (error) {
     console.error("Error al procesar el archivo:", error);
@@ -203,7 +209,7 @@ async function downloadAndProcessZip(url) {
 // Ruta para cargar datos manualmente
 router.get("/actualizar-datos", async (req, res) => {
   try {
-    await importData();
+    await importarDataSubidas();
     res.status(200).json({
       message: "Datos actualizados exitosamente en la base de datos.",
     });
@@ -227,4 +233,4 @@ router.get("/subidas", async (req, res) => {
 });
 
 // Exportar tanto el router como la función importData
-module.exports = { router, importData };
+module.exports = { router, importarDataSubidas };
