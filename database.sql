@@ -93,21 +93,10 @@ CREATE TABLE subidas (
     "23:00:00" FLOAT,
     "23:30:00" FLOAT
 );
-------------------------------------------------------------------------------------------------------------------------------------------
--- Espera
-CREATE TABLE espera (
-    id SERIAL PRIMARY KEY,                                      -- Identificador único
-    paradero VARCHAR(20) NOT NULL REFERENCES paraderos(codigo), -- Código del paradero consultado
-    servicio VARCHAR(10) NOT NULL REFERENCES servicios(id),     -- Recorrido de bus en camino
-    bus VARCHAR(20) NOT NULL,                                   -- Identificador del bus
-    distancia INT NOT NULL,                                     -- Distancia (en metros) del bus al paradero consultado
-    llegada_min INT NOT NULL,                                   -- Tiempo mínimo estimado de llegada del bus
-    llegada_max INT NOT NULL,                                   -- Tiempo máximo estimado de llegada del bus
-    consulta TIMESTAMP DEFAULT CURRENT_TIMESTAMP                -- Tiempo en el que se realizó la consulta
-);
 
 ------------------------------------------------------------------------------------------------------------------------------------------
-                --Infraestructura
+--Infraestructura
+
 -- Recorridos
 CREATE TABLE recorridos (
     servicio VARCHAR(10) PRIMARY KEY REFERENCES servicios(id),  -- Código del recorrido de bus
@@ -127,6 +116,24 @@ CREATE TABLE tramos_ruta (
     distancia DOUBLE PRECISION,                                 --Peso de la arista, puede ser la distancia entre los paraderos
     geom GEOMETRY(LineString, 4326)                             --Coordenadas que unen los paraderos
 );
+----------------------------------------------------------------------------------------------------------------------------------------
+-- servicios
+CREATE TABLE servicios (
+    id VARCHAR(10) PRIMARY KEY
+);
+
+-- Espera
+CREATE TABLE espera (
+    id SERIAL PRIMARY KEY,                                      -- Identificador único
+    paradero VARCHAR(20) NOT NULL REFERENCES paraderos(codigo), -- Código del paradero consultado
+    servicio VARCHAR(10) NOT NULL REFERENCES servicios(id),     -- Recorrido de bus en camino
+    bus VARCHAR(20) NOT NULL,                                   -- Identificador del bus
+    distancia INT NOT NULL,                                     -- Distancia (en metros) del bus al paradero consultado
+    llegada_min INT NOT NULL,                                   -- Tiempo mínimo estimado de llegada del bus
+    llegada_max INT NOT NULL,                                   -- Tiempo máximo estimado de llegada del bus
+    consulta TIMESTAMP DEFAULT CURRENT_TIMESTAMP                -- Tiempo en el que se realizó la consulta
+);
+
 ----------------------------------------------------------------------------------------------------------------------------------------
 --Alertas
 CREATE TABLE alertas (
@@ -157,7 +164,3 @@ CREATE TABLE trafico (
 );
 
 -------------------------------------------------------------------
--- servicios
-CREATE TABLE servicios (
-    id VARCHAR(10) PRIMARY KEY
-);
