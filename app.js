@@ -18,7 +18,7 @@ const serviciosService = require("./service/serviciosService");
 const old = require("./appOld");
 
 // Importar archivos de metadata
-const recorrido = require("./metadata/recorrido");
+const {router: recorrido, cargarRutasDeServicios} = require("./metadata/recorrido");
 const {
   router: subidasRouter,
   importarDataSubidas,
@@ -188,67 +188,95 @@ app.get("/map", async (req, res) => {
     // Leer el archivo CSV y obtener los registros
     const ubicaciones = [];
     fs.createReadStream(outputFilePath2)
-      .pipe(csv())
-      .on("data", (row) => {
-        // Buscar el paradero y el valor correspondiente a la hora actual
-        let paradero = row.codigoParadero;
-        const paraderoData = dataPredicha.find(
-          (row) => row.paradero === paradero
-        );
-        const densidadActual = paraderoData
-          ? paraderoData[formattedTimeInit] || 0
-          : 0;
-        const comuna = paraderoData ? paraderoData["Comuna"] || 0 : 0;
-        let ubicacion = {
-          codigoParadero: row.codigoParadero,
-          latitud: parseFloat(row.latitud),
-          longitud: parseFloat(row.longitud),
-          densidad: densidadActual,
-          comuna: comuna,
-        };
-        ubicaciones.push(ubicacion);
-      })
-      .on("end", () => {
-        // Mostrar las ubicaciones obtenidas en la consola
-        //console.log('Ubicaciones obtenidas:', ubicaciones);
-        console.log("OK");
-        // Verificar el número de ubicaciones obtenidas
-        if (ubicaciones.length === 0) {
-          console.error("No se encontraron ubicaciones en el archivo CSV.");
-          return res
-            .status(400)
-            .send("No se encontraron ubicaciones en el archivo CSV.");
-        }
+    .pipe(csv())
+    .on("data", (row) => {
+      // Buscar el paradero y el valor correspondiente a la hora actual
+      let paradero = row.codigoParadero;
+      const paraderoData = dataPredicha.find(
+        (row) => row.paradero === paradero
+      );
+      const densidadActual = paraderoData
+        ? paraderoData[formattedTimeInit] || 0
+        : 0;
+      const comuna = paraderoData ? paraderoData["Comuna"] || 0 : 0;
+      let ubicacion = {
+        codigoParadero: row.codigoParadero,
+        latitud: parseFloat(row.latitud),
+        longitud: parseFloat(row.longitud),
+        densidad: densidadActual,
+        comuna: comuna,
+      };
+      ubicaciones.push(ubicacion);
+    })
+    .on("end", () => {
+      // Mostrar las ubicaciones obtenidas en la consola
+      //console.log('Ubicaciones obtenidas:', ubicaciones);
+      console.log("OK");
+      // Verificar el número de ubicaciones obtenidas
+      if (ubicaciones.length === 0) {
+        console.error("No se encontraron ubicaciones en el archivo CSV.");
+        return res
+          .status(400)
+          .send("No se encontraron ubicaciones en el archivo CSV.");
+      }
 
-        // Renderizar la vista con las ubicaciones encontradas
-        res.render("map", {
-          ubicaciones,
-          hora: `${formattedTimeInit} a ${formattedTimeFinal}`,
-        });
+      // Renderizar la vista con las ubicaciones encontradas
+      res.render("map", {
+        ubicaciones,
+        hora: `${formattedTimeInit} a ${formattedTimeFinal}`,
       });
+    });
   } catch (error) {
     console.error("Error al leer el archivo CSV de ubicaciones:", error);
     res.status(500).send("Error al leer el archivo CSV de ubicaciones.");
   }
 });
 
-// Ruta para renderizar el mapa de la ruta específica
+// Ruta para renderizar el mapa de la ruta específica mostrando ambos sentidos
 app.get("/ver-ruta/:id", async (req, res) => {
   const busCode = req.params.id;
   try {
     console.log("Obteniendo datos de la micro", req.params);
     console.log(busCode);
-    const response = await axios.get(
-      `http://localhost:${PORT}/metadata/recorrido/${busCode}`
-    );
-    const routeData = response.data;
-
+    
+    // Definir las direcciones a obtener
+    const direcciones = ['ida', 'vuelta'];
+    
+    // Crear un array de promesas para las solicitudes de ambas direcciones
+    const solicitudes = direcciones.map(direccion => {
+      return axios.get(
+        `http://localhost:${PORT}/metadata/recorrido/${busCode}?direccion=${direccion}`
+      ).then(response => ({
+        direccion,
+        data: response.data
+      })).catch(error => {
+        console.warn(`No se pudo obtener datos de ${direccion} para el servicio ${busCode}:`, error.message);
+        return {
+          direccion,
+          data: null
+        };
+      });
+    });
+    
+    // Esperar a que todas las solicitudes se completen
+    const resultados = await Promise.all(solicitudes);
+    
+    // Construir el objeto con ambos recorridos
+    const routeData = {};
+    resultados.forEach(result => {
+      if (result.data) {
+        routeData[result.direccion] = result.data;
+      }
+    });
+    
+    // Pasar ambos recorridos a la vista
     res.render("ruta", { routeData: JSON.stringify(routeData), busCode });
   } catch (error) {
     console.error(`Error al obtener datos de la micro ${busCode}:`, error);
     res.status(500).send("No se pudo obtener la ruta.");
   }
 });
+
 
 // Ruta para obtener y almacenar ubicaciones de paraderos
 app.get("/obtener-ubicaciones", async (req, res) => {
@@ -304,10 +332,11 @@ app.use("/threats", disponibilidad);
 app.use("/threats", trafficGoogle);
 
 // Ruta para cargar datos en la base de datos manualmente
-app.get("/actualizar-datos", async (req, res) => {
+app.get("/importar-datos", async (req, res) => {
   try {
     await importarDataSubidas();
     await serviciosService.importarServicios();
+    await paraderosService.processAndImportParaderos();
     res.status(200).json({
       message: "Datos actualizados exitosamente en la base de datos.",
     });
@@ -333,7 +362,15 @@ app.get("/importar-paraderos", async (req, res) => {
       .json({ message: "Error al importar paraderos.", error });
   }
 });
-
+app.get('/cargar-rutas', async (req, res) => {
+  try {
+      await cargarRutasDeServicios();
+      res.status(200).json({ message: 'Carga de rutas completada.' });
+  } catch (error) {
+      console.error('Error al cargar las rutas:', error);
+      res.status(500).json({ message: 'Error al cargar las rutas.', error });
+  }
+});
 // Ruta para corregir paraderos inválidos
 app.get("/corregir-paraderos-invalidos", async (req, res) => {
   try {

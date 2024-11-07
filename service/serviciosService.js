@@ -50,7 +50,20 @@ async function importarServicios() {
       client.release();
     }
   }
-  
+  // Función para obtener todos los servicios desde la base de datos
+async function obtenerServicios() {
+  const client = await pool.connect();
+  try {
+      const res = await client.query('SELECT id FROM servicios');
+      return res.rows.map(row => row.id);
+  } catch (error) {
+      console.error('Error al obtener los servicios:', error);
+      throw error;
+  } finally {
+      client.release();
+  }
+}
+
 
   
-  module.exports = { importarServicios} ;
+  module.exports = { importarServicios, obtenerServicios} ;

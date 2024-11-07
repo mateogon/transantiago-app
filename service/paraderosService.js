@@ -4,19 +4,11 @@ const axios = require('axios');
 const fs = require('fs');
 const csv = require('csv-parser');
 const path = require('path');
-const { Pool } = require('pg');
+const { pool } = require('../database');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 require('dotenv').config();
 const { Buffer } = require('buffer');
 
-// Configurar el pool de conexiones a PostgreSQL usando variables de entorno
-const pool = new Pool({
-  user: process.env.DB_USER,         // Usuario de la base de datos
-  host: process.env.DB_HOST,         // Host de la base de datos
-  database: process.env.DB_DATABASE, // Nombre de la base de datos
-  password: process.env.DB_PASSWORD, // Contraseña de la base de datos
-  port: process.env.DB_PORT,         // Puerto de la base de datos
-});
 
 const BASE_URL = "https://www.red.cl/predictor/prediccion?t=%s&codsimt=%s&codser=";
 const SESSION_URL = "https://www.red.cl/planifica-tu-viaje/cuando-llega/";
@@ -117,9 +109,9 @@ async function insertParaderos(paraderos) {
     await client.query('BEGIN');
 
     const insertQuery = `
-      INSERT INTO paraderos (paradero, geom)
+      INSERT INTO paraderos (codigo, coordenadas)
       VALUES ($1, ST_SetSRID(ST_Point($2, $3), 4326))
-      ON CONFLICT (paradero) DO NOTHING;
+      ON CONFLICT (codigo) DO NOTHING;
     `;
 
     for (const p of paraderos) {
@@ -127,7 +119,6 @@ async function insertParaderos(paraderos) {
     }
 
     await client.query('COMMIT');
-    console.log('Paraderos insertados correctamente en la base de datos.');
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('Error al insertar paraderos:', err);
@@ -143,6 +134,21 @@ async function insertParaderos(paraderos) {
 async function processAndImportParaderos() {
   try {
     const csvFilePath = path.join(__dirname, outputFilePath2);
+    
+    // Verificar si el archivo existe, si no, crear uno vacío con los encabezados
+    if (!fs.existsSync(csvFilePath)) {
+      const csvWriter = createCsvWriter({
+        path: csvFilePath,
+        header: [
+          { id: 'codigoParadero', title: 'codigoParadero' },
+          { id: 'latitud', title: 'latitud' },
+          { id: 'longitud', title: 'longitud' },
+        ],
+      });
+      await csvWriter.writeRecords([]); // Escribir un archivo vacío con encabezados
+      console.log(`Archivo CSV creado: ${outputFilePath2}`);
+    }
+
     const paraderos = await readParaderosCSV(csvFilePath);
 
     if (paraderos.length === 0) {
@@ -159,6 +165,7 @@ async function processAndImportParaderos() {
   }
 }
 
+
 /**
  * Función para obtener la ubicación de un paradero y guardarla
  */
@@ -170,6 +177,7 @@ async function obtenerUbicacionYGuardar(codigoParadero) {
 
     // Realizar la solicitud para obtener latitud y longitud
     const resp = await axios.get(url1);
+    console.log("Respuesta de la API:", resp.data);
     const { x: lat, y: lon } = resp.data;
 
     if (!lat || !lon) {
@@ -302,5 +310,5 @@ module.exports = {
   processAndImportParaderos,
   obtenerUbicacionYGuardar,
   obtenerUbicacion,
-  codigosParaderos, // Exportar si es necesario en otras partes
+  codigosParaderos,
 };

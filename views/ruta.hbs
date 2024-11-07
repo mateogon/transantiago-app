@@ -52,7 +52,7 @@
     <!-- Include Bootstrap JS if needed -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <!-- Custom Script -->
- <script>
+<script>
     const routeData = {{{routeData}}}; // Datos de la ruta en formato GeoJSON
 
     // Inicializar el mapa sin especificar centro y zoom
@@ -71,26 +71,55 @@
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    // Crear una capa GeoJSON y añadirla al mapa
-    var routeLayer = L.geoJSON(routeData, {
-        onEachFeature: function (feature, layer) {
-            if (feature.geometry.type === "Point") {
-                // Añadir un marcador en cada paradero con un popup
-                layer.bindPopup(`<b>Paradero:</b> ${feature.properties.description}`);
-            } else if (feature.geometry.type === "LineString") {
-                // Estilizar la línea del recorrido
-                layer.setStyle({ color: 'blue' });
-            }
-        },
-        pointToLayer: function (feature, latlng) {
-            // Personalizar los marcadores si lo deseas
-            return L.marker(latlng);
+    // Función para agregar GeoJSON al mapa con estilos diferenciados
+    function agregarRecorrido(geoJson, color, nombre) {
+        if (geoJson && geoJson.features.length > 0) {
+            L.geoJSON(geoJson, {
+                onEachFeature: function (feature, layer) {
+                    if (feature.geometry.type === "Point") {
+                        // Añadir un marcador en cada paradero con un popup
+                        layer.bindPopup(`<b>Paradero:</b> ${feature.properties.description}`);
+                    } else if (feature.geometry.type === "LineString") {
+                        // Estilizar la línea del recorrido
+                        layer.setStyle({ color: color, weight: 4 });
+                    }
+                },
+                pointToLayer: function (feature, latlng) {
+                    // Personalizar los marcadores si lo deseas
+                    return L.marker(latlng);
+                }
+            }).addTo(map).bindPopup(`<b>Recorrido:</b> ${nombre}`);
         }
-    }).addTo(map);
+    }
 
-    // Ajustar la vista del mapa para que encaje con la ruta
-    map.fitBounds(routeLayer.getBounds());
+    // Colores para cada dirección
+    const colores = {
+        ida: '#00A77E',    // Verde para ida
+        vuelta: '#CF152D'  // Rojo para vuelta
+    };
+
+    // Agregar recorrido de ida
+    agregarRecorrido(routeData.ida, colores.ida, 'Ida');
+
+    // Agregar recorrido de vuelta
+    agregarRecorrido(routeData.vuelta, colores.vuelta, 'Vuelta');
+
+    // Ajustar la vista del mapa para mostrar ambos recorridos
+    // Obtenemos los límites de ambos recorridos
+    const capas = [];
+    if (routeData.ida) {
+        capas.push(L.geoJSON(routeData.ida));
+    }
+    if (routeData.vuelta) {
+        capas.push(L.geoJSON(routeData.vuelta));
+    }
+
+    if (capas.length > 0) {
+        const grupo = L.featureGroup(capas);
+        map.fitBounds(grupo.getBounds());
+    }
 </script>
+
 
 </body>
 </html>
