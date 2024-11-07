@@ -94,31 +94,33 @@ CREATE TABLE subidas (
     "23:30:00" FLOAT
 );
 ------------------------------------------------------------------------------------------------------------------------------------------
---Espera
+-- Espera
 CREATE TABLE espera (
-    id SERIAL PRIMARY KEY,                                      --Identificador único
-    paradero VARCHAR(20) NOT NULL,                              --Código del paradero consultado
-    servicio VARCHAR(10) NOT NULL,                              --Recorrido de bus en camino
-    bus VARCHAR(20) NOT NULL,                                   --Identificador del bus
-    distancia INT NOT NULL,                                     --Distancia (en metros) del bus al paradero consultado
-    llegada_min INT NOT NULL,                                   --Tiempo mínimo estimado de llegada del bus
-    llegada_max INT NOT NULL,                                   --Tiempo máximo estimado de llegada del bus
-    consulta TIMESTAMP DEFAULT CURRENT_TIMESTAMP                --Tiempo en el que se realizó la consulta
+    id SERIAL PRIMARY KEY,                                      -- Identificador único
+    paradero VARCHAR(20) NOT NULL REFERENCES paraderos(codigo), -- Código del paradero consultado
+    servicio VARCHAR(10) NOT NULL REFERENCES servicios(id),     -- Recorrido de bus en camino
+    bus VARCHAR(20) NOT NULL,                                   -- Identificador del bus
+    distancia INT NOT NULL,                                     -- Distancia (en metros) del bus al paradero consultado
+    llegada_min INT NOT NULL,                                   -- Tiempo mínimo estimado de llegada del bus
+    llegada_max INT NOT NULL,                                   -- Tiempo máximo estimado de llegada del bus
+    consulta TIMESTAMP DEFAULT CURRENT_TIMESTAMP                -- Tiempo en el que se realizó la consulta
 );
+
 ------------------------------------------------------------------------------------------------------------------------------------------
                 --Infraestructura
---Recorridos
-CREATE TABLE recorridos(
-    servicio VARCHAR(5) PRIMARY KEY                             --Código del recorrido de bus
-    calle_id INT REFERENCES calles(id)                          --ID de la ruta que realiza el bus
+-- Recorridos
+CREATE TABLE recorridos (
+    servicio VARCHAR(10) PRIMARY KEY REFERENCES servicios(id),  -- Código del recorrido de bus
+    calle_id INT REFERENCES tramos_ruta(id)                     -- ID de la ruta que realiza el bus
 );
+
 --Paraderos
 CREATE TABLE paraderos (
     codigo VARCHAR(10) PRIMARY KEY,                             --Código del paradero
     coordenadas GEOGRAPHY(POINT, 4326)                          --Coordenadas del paradero                     
 );
---Calles
-CREATE TABLE calles (
+--Tramos ruta
+CREATE TABLE tramos_ruta (
     id SERIAL PRIMARY KEY,                                      --Identificador único
     origen VARCHAR(10) REFERENCES paraderos(codigo),            --Paradero de origen
     destino VARCHAR(10) REFERENCES paraderos(codigo),           --Paradero de destino
