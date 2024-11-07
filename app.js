@@ -348,20 +348,6 @@ app.get("/importar-datos", async (req, res) => {
   }
 });
 
-// Ruta para importar paraderos desde el archivo CSV e insertar en la base de datos
-app.get("/importar-paraderos", async (req, res) => {
-  try {
-    await paraderosService.processAndImportParaderos();
-    res
-      .status(200)
-      .json({ message: "Paraderos importados y almacenados correctamente." });
-  } catch (error) {
-    console.error("Error al importar paraderos:", error);
-    res
-      .status(500)
-      .json({ message: "Error al importar paraderos.", error });
-  }
-});
 app.get('/cargar-rutas', async (req, res) => {
   try {
       await cargarRutasDeServicios();
