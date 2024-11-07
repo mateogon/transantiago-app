@@ -99,9 +99,14 @@ CREATE TABLE subidas (
 
 -- Recorridos
 CREATE TABLE recorridos (
-    servicio VARCHAR(10) PRIMARY KEY REFERENCES servicios(id),  -- Código del recorrido de bus
-    calle_id INT REFERENCES tramos_ruta(id)                     -- ID de la ruta que realiza el bus
+    id SERIAL PRIMARY KEY,                                       -- Identificador único
+    servicio VARCHAR(10) REFERENCES servicios(id),               -- Código del servicio
+    tramo_ruta_id INT REFERENCES tramos_ruta(id),                     -- ID del tramo de ruta
+    orden INT NOT NULL                                           -- Orden del tramo en el recorrido
 );
+-- Agregar restricción de unicidad para evitar duplicados en (servicio, orden)
+ALTER TABLE recorridos
+ADD CONSTRAINT recorridos_servicio_orden_unique UNIQUE (servicio, orden);
 
 --Paraderos
 CREATE TABLE paraderos (
