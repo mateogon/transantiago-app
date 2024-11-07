@@ -3,6 +3,10 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 
 #Extensión para dijkstra
 CREATE EXTENSION IF NOT EXISTS pgrouting;
+
+
+#Extensión para UUID
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -------------------------------------------------------------------------------------------------------------------------------------------
 #Aglomeracion
 CREATE TABLE aglomeracion (
@@ -105,7 +109,7 @@ CREATE TABLE espera (
                 #Infraestructura
 #Recorridos
 CREATE TABLE recorridos(
-    servicio VARCHAR(5) PRIMARY KEY                             --Código del recorrido de los buses
+    servicio VARCHAR(5) PRIMARY KEY                             --Código del recorrido de bus
     calle_id INT REFERENCES calles(id)                          --ID de la ruta que realiza el bus
 );
 #Paraderos
@@ -143,7 +147,7 @@ CREATE TABLE metro (
 );
 ------------------------------------------------------------------------------------------------------------------------------------------
 #Tráfico_Waze
-CREATE TABLE trabajos (
+CREATE TABLE trafico (
     id SERIAL PRIMARY KEY,                                      --Identificador único
     geom GEOMETRY(LineString, 4326),                            --Coordenadas del incidente
     descripcion VARCHAR(255),                                   --Tipo de incidente (trabajos, policia, congestion)
