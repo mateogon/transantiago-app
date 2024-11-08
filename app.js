@@ -21,6 +21,7 @@ const metro = require('./threats/metro');
 const alerts = require('./threats/alerts');
 const traffic = require('./threats/traffic');
 const disponibilidad = require('./threats/disponibilidad');
+const incidentes = require('./threats/incidentes');
 const trafficGoogle = require('./threats/trafficGoogle');
 
 const app = express();
@@ -354,6 +355,7 @@ app.use('/threats', metro);
 app.use('/threats', alerts);
 app.use('/threats', traffic);
 app.use('/threats', disponibilidad);
+app.use('/threats', incidentes);
 app.use('/threats', trafficGoogle);
 
 app.listen(PORT, () => {
