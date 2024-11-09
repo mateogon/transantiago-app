@@ -55,8 +55,11 @@ async function downloadAndProcess(url) {
         return 0;
       });  
 
-    // Crear un objeto para almacenar resultados
-    const resultado = {};
+    // Crear un objeto GeoJSON para almacenar resultados
+    const geoJsonData = {
+        type: "FeatureCollection",
+        features: []
+    };
 
     // Procesar filas del archivo, comenzando desde la fila 2 (ignorando encabezado)
     data.forEach(row => {
@@ -78,24 +81,35 @@ async function downloadAndProcess(url) {
             usuarioObj = {
                 codigoUsuario,
                 name: `${codigoUsuario}${sentidoServicio === 'Ida' ? 'I' : 'R'}${variante}`
-            };   
+            };
+            
+            // Buscar si el paradero ya existe en `features`
+            let paraderoFeature = geoJsonData.features.find(feature => feature.properties.codigoParadero === codigoParadero);
 
             // Si el paradero ya existe, agregar el objeto usuario al array `usuarios`
-            if (resultado[codigoParadero]) {
-                resultado[codigoParadero].servicios.push(usuarioObj);
+            if (paraderoFeature) {
+                // Si el paradero ya existe, agregar el objeto usuario a la lista de `servicios`
+                paraderoFeature.properties.servicios.push(usuarioObj);
             } else {
-                // Si no existe, crea un nuevo objeto con `x`, `y` y un array `usuarios`
-                resultado[codigoParadero] = {
-                    x: lon,
-                    y: lat,
-                    servicios: [usuarioObj]
+                // Si no existe, crear una nueva característica para el paradero
+                paraderoFeature = {
+                    type: "Feature",
+                    geometry: {
+                        type: "Point",
+                        coordinates: [lon, lat]
+                    },
+                    properties: {
+                        codigoParadero,
+                        servicios: [usuarioObj]
+                    }
                 };
+                geoJsonData.features.push(paraderoFeature);
             }
         }
     });
 
     // Paso 4: Devolver el resultado en formato JSON
-    return resultado;
+    return geoJsonData;
 
   } catch (error) {
     console.error('Error al procesar el archivo:', error);
