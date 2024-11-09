@@ -11,6 +11,7 @@ const { Buffer } = require('buffer');
 const old = require('./appOld')
 
 // Importar archivos de metadata
+const paraderos = require('./metadata/paraderos');
 const recorrido = require('./metadata/recorrido');
 const subidas = require('./metadata/subidas');
 const espera = require('./metadata/espera');
@@ -344,6 +345,7 @@ app.get('/paradero/:stopid', getSession, obtenerUbicacion, (req, res) => {
 app.use('/old', old);
 
 // Metadata
+app.use('/metadata', paraderos);
 app.use('/metadata', recorrido);
 app.use('/metadata', subidas);
 app.use('/metadata', espera);
