@@ -6,16 +6,42 @@ const xlsx = require('xlsx');
 const path = require('path');
 const fs = require('fs');
 const proj4 = require('proj4');
+const { insertData, connect, disconnect } = require('../database');
 
 const paraderos = "https://www.dtpm.cl/descargas/poss24/2024-11-09_consolidado_Registro-Paradas_anual.xlsx";
 
-const utmToWgs84 = proj4('EPSG:32719', 'EPSG:4326');
+const utmToWgs84 = proj4('EPSG:32719', 'EPSG:4326'); // 32719 está basado en coordenadas UTM y 4326 está basado en las coordenadas WGS84
+
+// Función para insertar datos en PostgreSQL
+async function insertParadero(codigoParadero, lon, lat, servicios) {
+    try {
+        // Verificar si las coordenadas son válidas
+        if (isNaN(lon) || isNaN(lat)) {
+            throw new Error(`Coordenadas inválidas para el paradero ${codigoParadero}: lon ${lon}, lat ${lat}`);
+        }
+        
+        // Inserta o actualiza los datos en la tabla paraderos
+        const instruccion = {
+            'tabla': 'paraderos',
+            'datos': {
+                'codigo': codigoParadero,
+                'geom':  `POINT(${lon} ${lat})`,
+                'servicios': JSON.stringify(servicios)
+            },
+            'conflict': 'ON CONFLICT (codigo) DO UPDATE SET servicios = paraderos.servicios || EXCLUDED.servicios' // Combina servicios si ya existe
+        };
+        await insertData(instruccion);
+    } catch (error) {
+        console.error(`Error al insertar el paradero ${codigoParadero}:`, error);
+    }
+}
 
 // Ruta para manejar la subida de datos
 router.get('/paraderos', async (req, res) => {
     try {
+        await connect();
         const data = await downloadAndProcess(paraderos); // Cambia el nombre de la variable a "paraderos"
-    
+
         if (data) {
             res.status(200).json(data);
         } else {
@@ -24,6 +50,9 @@ router.get('/paraderos', async (req, res) => {
     } catch (error) {
         console.error('Error en la importación:', error);
         res.status(500).json({ message: 'Error en la importación de datos.' });
+    } finally {
+        console.log('Datos guardados en la tabla paraderos')
+        // await disconnect();
     }
 });
 
@@ -105,6 +134,8 @@ async function downloadAndProcess(url) {
                 };
                 geoJsonData.features.push(paraderoFeature);
             }
+            // Paso 3: Insertar datos en la base de datos.
+            insertParadero(codigoParadero, lon, lat, [usuarioObj]);
         }
     });
 
