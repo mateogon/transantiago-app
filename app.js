@@ -13,6 +13,7 @@ const old = require('./appOld')
 // Importar archivos de metadata
 const paraderos = require('./metadata/paraderos');
 const recorrido = require('./metadata/recorrido');
+const recorridov2 = require('./metadata/recorridov2');
 const subidas = require('./metadata/subidas');
 const espera = require('./metadata/espera');
 const aglomeracion = require('./metadata/aglomeracion');
@@ -347,6 +348,7 @@ app.use('/old', old);
 // Metadata
 app.use('/metadata', paraderos);
 app.use('/metadata', recorrido);
+app.use('/metadata', recorridov2);
 app.use('/metadata', subidas);
 app.use('/metadata', espera);
 app.use('/metadata', aglomeracion);
