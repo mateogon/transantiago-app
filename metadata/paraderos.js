@@ -56,12 +56,12 @@ router.get('/paraderos', async (req, res) => {
     }
 });
 
-// Procesar archivos Zip
+// Procesar archivos XLSX
 async function downloadAndProcess(url) {
   // Definir rutas de archivo
   const xlsxPath = path.join(__dirname, '2024-11-09_consolidado_Registro-Paradas_anual.xlsx');
   try {
-    // Paso 1: Descargar el archivo ZIP
+    // Paso 1: Descargar el archivo XLSX
     const response = await axios({
       url,
       method: 'GET',
