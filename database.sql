@@ -108,14 +108,15 @@ CREATE TABLE espera (
 ------------------------------------------------------------------------------------------------------------------------------------------
                 #Infraestructura
 #Recorridos
-CREATE TABLE recorridos(
-    servicio VARCHAR(5) PRIMARY KEY                             --Código del recorrido de bus
-    calle_id INT REFERENCES calles(id)                          --ID de la ruta que realiza el bus
+CREATE TABLE recorridos (
+    codigo VARCHAR(50) PRIMARY KEY,
+    geom geometry(LINESTRING, 4326) -- Usamos el tipo LINESTRING con SRID 4326 (WGS 84)
 );
 #Paraderos
 CREATE TABLE paraderos (
-    codigo VARCHAR(10) PRIMARY KEY,                             --Código del paradero
-    coordenadas GEOGRAPHY(POINT, 4326)                          --Coordenadas del paradero                     
+    codigo VARCHAR(50) PRIMARY KEY,                             --Código del paradero
+    geom GEOMETRY(Point, 4326),                          --Coordenadas del paradero         
+    servicios JSONB            
 );
 #Calles
 CREATE TABLE calles (
