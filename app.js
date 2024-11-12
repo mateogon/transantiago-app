@@ -27,11 +27,12 @@ const espera = require("./metadata/espera");
 const aglomeracion = require("./metadata/aglomeracion");
 
 // Importar archivos de amenazas
-const metro = require("./threats/metro");
-const alerts = require("./threats/alerts");
-const traffic = require("./threats/traffic");
-const disponibilidad = require("./threats/disponibilidad");
-const trafficGoogle = require("./threats/trafficGoogle");
+const metro = require('./threats/metro');
+const alerts = require('./threats/alerts');
+const traffic = require('./threats/traffic');
+const disponibilidad = require('./threats/disponibilidad');
+const incidentes = require('./threats/incidentes');
+const trafficGoogle = require('./threats/trafficGoogle');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
