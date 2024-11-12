@@ -4,7 +4,6 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 #Extensión para dijkstra
 CREATE EXTENSION IF NOT EXISTS pgrouting;
 
-
 #Extensión para UUID
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -133,7 +132,6 @@ CREATE TABLE alertas (
     calle VARCHAR(100),                                         --Calle donde se origina el incidente
     tipo VARCHAR(50),                                           --Tipo de alerta (policia, tráfico, calle cerrada)
     subtipo VARCHAR(50),                                        --Subtipo (alta congestión)
-    descripcion TEXT,                                           --Descripción del reporte
     geom GEOGRAPHY(POINT, 4326)                                 --Coordenadas del reporte
 );
 ------------------------------------------------------------------------------------------------------------------------------------------
@@ -153,4 +151,38 @@ CREATE TABLE trafico (
     geom GEOMETRY(LineString, 4326),                            --Coordenadas del incidente
     descripcion VARCHAR(255),                                   --Tipo de incidente (trabajos, policia, congestion)
     creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP                --Hora de creación del incidente
+);
+------------------------------------------------------------------------------------------------------------------------------------------
+#Incidentes
+CREATE TABLE incidentes(
+    id INT PRIMARY KEY,                                         -- ID único para cada incidente
+    fecha TIMESTAMP,                                            -- Fecha de publicación del post
+    titulo TEXT,                                                -- Título del incidente
+    post_url VARCHAR(255)                                       -- URL del post para acceso directo
+);
+-------------------------------------------------------------------------------------------------------------------------------------------
+#Disponibilidad UOCT
+CREATE TABLE disponibilidad (
+    id SERIAL PRIMARY KEY,                                      -- Identificador único
+    origen VARCHAR(255) NOT NULL,                               -- Lugar de origen
+    destino VARCHAR(255) NOT NULL,                              -- Lugar de término
+    descripcion VARCHAR(255),                                   -- Descripción del incidente
+    fecha_creacion TIMESTAMP,                                   -- Fecha de creación 
+    tiempo_trayecto INTEGER,                                    -- Tiempo que se demora en recorrer el trayecto
+    nivel_congestion INTEGER,                                   -- Nivel de congestión del segmento
+    habilitado BOOLEAN,                                         -- Si el segmento se encuentra habilitado para la circulación
+    largo_segmento INTEGER                                      -- Largo del segmento del incidente
+    UNIQUE (origen, destino)                                    -- Restricción única para la combinación de origen y destino
+);
+-----------------------------------------------------------------------------------------------------------------------------------------------
+        #Trafico Google
+#Rutas
+CREATE TABLE rutas (
+  id SERIAL PRIMARY KEY,
+  origen GEOGRAPHY(Point),
+  destino GEOGRAPHY(Point),
+  distancia NUMERIC,
+  duracion INTERVAL,
+  polyline TEXT,
+  steps JSONB
 );
