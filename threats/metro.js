@@ -1,11 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
+const { insertData, connect, disconnect } = require('../database');
 
 const metro = "https://www.metro.cl/api/estadoRedDetalle.php";
 
 router.get('/metro', async (req, res) => {
     try {
+        await connect();
         const data = await obtenerEstadosMetro(metro);
 
         if(data){
@@ -17,8 +19,36 @@ router.get('/metro', async (req, res) => {
     } catch (error) {
         console.error('Error en la importación:', error);
         res.status(500).json({ message: 'Error en la importación de datos.' });
+    } finally {
+      console.log('Datos guardados en la tabla metro')
+      // await disconnect();
     }
 });
+
+async function insertMetro(nombre, codigo, estado, combinacion, linea) {
+  try {
+      
+      // Inserta o actualiza los datos en la tabla metro
+      const instruccion = {
+          'tabla': 'metro',
+          'datos': {
+              'nombre': nombre,
+              'codigo': codigo,
+              'estado': estado,
+              'combinacion': combinacion,
+              'linea':  linea
+          },
+          'conflict': `ON CONFLICT (codigo) DO UPDATE 
+                       SET nombre = EXCLUDED.nombre,
+                           estado = EXCLUDED.estado,
+                           combinacion = EXCLUDED.combinacion,
+                           linea = EXCLUDED.linea`
+      };
+      await insertData(instruccion);
+  } catch (error) {
+      console.error(`Error al insertar el estado de la estacion ${nombre}:`, error);
+  }
+}
 
 // Metro
 async function obtenerEstadosMetro(url) {
@@ -53,7 +83,11 @@ async function obtenerEstadosMetro(url) {
           linea: linea
         };
         resultado.push(estacionData);
+
+        insertMetro(estacion.nombre, estacion.codigo, estacion.estado, estacion.combinacion, linea);
+
       });
+
     });
   
     return resultado;
