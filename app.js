@@ -18,7 +18,9 @@ const serviciosService = require("./service/serviciosService");
 const old = require("./appOld");
 
 // Importar archivos de metadata
+const paraderos = require('./metadata/paraderos');
 const {router: recorrido, cargarRutasDeServicios} = require("./metadata/recorrido");
+const recorridov2 = require('./metadata/recorridov2');
 const {
   router: subidasRouter,
   importarDataSubidas,
@@ -320,10 +322,13 @@ app.get(
 app.use("/old", old);
 
 // Metadata
-app.use("/metadata", recorrido);
-app.use("/metadata", subidasRouter);
-app.use("/metadata", espera);
-app.use("/metadata", aglomeracion);
+app.use('/metadata', paraderos);
+app.use('/metadata', recorrido);
+app.use('/metadata', recorridov2);
+app.use('/metadata', subidas);
+app.use('/metadata', espera);
+app.use('/metadata', aglomeracion);
+
 
 // Amenazas
 app.use("/threats", metro);
