@@ -1,6 +1,4 @@
-const { Pool } = require('pg');
-const express = require("express");
-const router = express.Router();
+const { Client } = require('pg');
 require('dotenv').config();
 require('dotenv').config();
 const { Buffer } = require('buffer');
@@ -14,9 +12,30 @@ const pool = new Pool({
   port: process.env.DB_PORT,         // Puerto de la base de datos
 });
 
+// Función para iniciar la conexión
+async function connect() {
+  try {
+      await client.connect();
+      console.log('Conexión a PostgreSQL exitosa');
+  } catch (err) {
+      console.error('Error al conectar a PostgreSQL:', err);
+      throw err;
+  }
+}
+
+// Función para cerrar la conexión
+async function disconnect() {
+  try {
+      await client.end();
+      console.log('Conexión a PostgreSQL cerrada');
+  } catch (err) {
+      console.error('Error al cerrar la conexión de PostgreSQL:', err);
+      throw err;
+  }
+}
 
 async function insertData(instruccion) {
-  const { tabla, datos } = instruccion;
+  const { tabla, datos, conflict = "" } = instruccion;
 
   // Verifica que haya datos y tabla definidos
   if (!tabla || !datos || datos.length === 0) {
@@ -24,30 +43,27 @@ async function insertData(instruccion) {
   }
 
   // Armar dinámicamente las columnas y los valores
-  const columnas = Object.keys(datos[0]); // Asumimos que todas las entradas tienen las mismas columnas
-  const valores = datos.map((dato) => Object.values(dato));
+  const columnas = Object.keys(datos); // Asumimos que todas las entradas tienen las mismas columnas
+  const valores = Object.values(datos);
 
   // Crear la consulta dinámica
-  const placeholders = valores.map(
-    (valor, i) => `(${valor.map((_, j) => `$${i * valor.length + j + 1}`).join(', ')})`
-  ).join(', ');
+  const placeholders = columnas.map((_, i) => `$${i + 1}`).join(', ');
 
   const query = `
     INSERT INTO ${tabla} (${columnas.join(', ')})
-    VALUES ${placeholders}
-    RETURNING id;
+    VALUES (${placeholders}) ${conflict}
   `;
 
-  const flatValues = valores.flat(); // Aplanar el array de valores para pasarlo al query
-
   try {
-    const res = await pool.query(query, flatValues);
-    console.log('Datos almacenados con éxito en la tabla', tabla, 'con IDs:', res.rows.map(row => row.id));
+    const res = await client.query(query, valores);
     return res.rows;
   } catch (err) {
     console.error('Error al almacenar los datos:', err);
+    
+    console.log(query);
+    console.log(valores);
     throw err;
   }
 }
 
-module.exports = { router, pool };
+module.exports = { connect, disconnect, insertData };

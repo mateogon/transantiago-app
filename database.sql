@@ -97,21 +97,16 @@ CREATE TABLE subidas (
 ------------------------------------------------------------------------------------------------------------------------------------------
 --Infraestructura
 
--- Recorridos
+#Recorridos
 CREATE TABLE recorridos (
-    id SERIAL PRIMARY KEY,                                       -- Identificador único
-    servicio VARCHAR(10) REFERENCES servicios(id),               -- Código del servicio
-    tramo_ruta_id INT REFERENCES tramos_ruta(id),                     -- ID del tramo de ruta
-    orden INT NOT NULL                                           -- Orden del tramo en el recorrido
+    codigo VARCHAR(50) PRIMARY KEY,
+    geom geometry(LINESTRING, 4326) -- Usamos el tipo LINESTRING con SRID 4326 (WGS 84)
 );
--- Agregar restricción de unicidad para evitar duplicados en (servicio, orden)
-ALTER TABLE recorridos
-ADD CONSTRAINT recorridos_servicio_orden_unique UNIQUE (servicio, orden);
-
---Paraderos
+#Paraderos
 CREATE TABLE paraderos (
-    codigo VARCHAR(10) PRIMARY KEY,                             --Código del paradero
-    coordenadas GEOGRAPHY(POINT, 4326)                          --Coordenadas del paradero                     
+    codigo VARCHAR(50) PRIMARY KEY,                             --Código del paradero
+    geom GEOMETRY(Point, 4326),                          --Coordenadas del paradero         
+    servicios JSONB            
 );
 --Tramos ruta
 CREATE TABLE tramos_ruta (
