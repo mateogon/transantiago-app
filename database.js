@@ -4,7 +4,7 @@ require('dotenv').config();
 const { Buffer } = require('buffer');
 
 // Configurar el pool de conexiones a PostgreSQL usando variables de entorno
-const pool = new Pool({
+const client = new Client({
   user: process.env.DB_USER,         // Usuario de la base de datos
   host: process.env.DB_HOST,         // Host de la base de datos
   database: process.env.DB_DATABASE, // Nombre de la base de datos

@@ -3,7 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
-const { pool } = require('../database');
+const { connect, disconnect } = require('../database');
 const { obtenerServicios } = require('../service/serviciosService');
 require('dotenv').config();
 
@@ -57,7 +57,7 @@ async function obtenerDatosYProcesar(url, direccion) {
         const paraderosCodigos = recorridoData.paraderos.map(p => p.cod);
 
         // Obtener los paraderos desde la base de datos
-        const client = await pool.connect();
+        const client = await connect();
         const paraderos = [];
 
         for (const codigoParadero of paraderosCodigos) {
@@ -78,7 +78,7 @@ async function obtenerDatosYProcesar(url, direccion) {
             }
         }
 
-        client.release();
+        disconnect()
 
         // Ahora 'paraderos' es un array con la información necesaria
 
@@ -187,7 +187,7 @@ async function obtenerDatosYProcesar(url, direccion) {
 
 // Insertar el recorrido en las tablas 'tramos_ruta' y 'recorridos'
 async function insertarRecorrido(geoJson, servicio, direccion) {
-    const client = await pool.connect();
+    const client = await connect();
     try {
         await client.query('BEGIN');
 
@@ -246,7 +246,7 @@ async function insertarRecorrido(geoJson, servicio, direccion) {
         console.error('Error al insertar recorrido:', err);
         throw err;
     } finally {
-        client.release();
+        disconnect()
     }
 }
 
@@ -292,7 +292,7 @@ async function cargarRutasDeServicios() {
 
 // Función para obtener el recorrido desde la base de datos y generar el GeoJSON
 async function obtenerRecorridoDesdeBD(servicio, direccion) {
-    const client = await pool.connect();
+    const client = await connect();
     try {
         // Obtener los tramos del servicio y direccion especificados
         const res = await client.query(
@@ -388,7 +388,7 @@ async function obtenerRecorridoDesdeBD(servicio, direccion) {
         console.error('Error al obtener el recorrido desde la base de datos:', error);
         throw error;
     } finally {
-        client.release();
+        disconnect()
     }
 }
 

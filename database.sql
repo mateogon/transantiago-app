@@ -97,12 +97,12 @@ CREATE TABLE subidas (
 ------------------------------------------------------------------------------------------------------------------------------------------
 --Infraestructura
 
-#Recorridos
+-- Recorridos
 CREATE TABLE recorridos (
     codigo VARCHAR(50) PRIMARY KEY,
     geom geometry(LINESTRING, 4326) -- Usamos el tipo LINESTRING con SRID 4326 (WGS 84)
 );
-#Paraderos
+-- Paraderos
 CREATE TABLE paraderos (
     codigo VARCHAR(50) PRIMARY KEY,                             --Código del paradero
     geom GEOMETRY(Point, 4326),                          --Coordenadas del paradero         

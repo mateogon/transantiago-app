@@ -21,10 +21,7 @@ const old = require("./appOld");
 const paraderos = require('./metadata/paraderos');
 const {router: recorrido, cargarRutasDeServicios} = require("./metadata/recorrido");
 const recorridov2 = require('./metadata/recorridov2');
-const {
-  router: subidasRouter,
-  importarDataSubidas,
-} = require("./metadata/subidas");
+const subidas = require('./metadata/subidas');
 const espera = require("./metadata/espera");
 const aglomeracion = require("./metadata/aglomeracion");
 
@@ -325,7 +322,7 @@ app.use("/old", old);
 app.use('/metadata', paraderos);
 app.use('/metadata', recorrido);
 app.use('/metadata', recorridov2);
-app.use('/metadata', subidas);
+app.use('/metadata', subidas.router);
 app.use('/metadata', espera);
 app.use('/metadata', aglomeracion);
 
@@ -340,7 +337,7 @@ app.use("/threats", trafficGoogle);
 // Ruta para cargar datos en la base de datos manualmente
 app.get("/importar-datos", async (req, res) => {
   try {
-    await importarDataSubidas();
+    await subidas.importarDataSubidas();
     await serviciosService.importarServicios();
     await paraderosService.processAndImportParaderos();
     res.status(200).json({
