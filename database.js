@@ -36,17 +36,17 @@ async function insertData(instruccion) {
   const { tabla, datos, conflict = "" } = instruccion;
 
   // Verifica que haya datos y tabla definidos
-  if (!tabla || !datos || datos.length === 0) {
+  if (!tabla || !datos || Object.keys(datos).length === 0) {
     throw new Error('La tabla o los datos no están definidos correctamente.');
   }
 
   // Armar dinámicamente las columnas y los valores
-  const columnas = Object.keys(datos); // Asumimos que todas las entradas tienen las mismas columnas
+  const columnas = Object.keys(datos).map(col => `"${col}"`);; // Asumimos que todas las entradas tienen las mismas columnas
   const valores = Object.values(datos);
 
   // Crear la consulta dinámica
-  const placeholders = columnas.map((_, i) => `$${i + 1}`).join(', ');
-
+  //const placeholders = columnas.map((_, i) => `$${i + 1}`).join(', ');
+  const placeholders = valores.map((_, i) => `$${i + 1}`);
   const query = `
     INSERT INTO ${tabla} (${columnas.join(', ')})
     VALUES (${placeholders}) ${conflict}
@@ -56,6 +56,7 @@ async function insertData(instruccion) {
     const res = await client.query(query, valores);
     return res.rows;
   } catch (err) {
+
     console.error('Error al almacenar los datos:', err);
     
     console.log(query);

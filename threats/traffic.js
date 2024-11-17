@@ -11,9 +11,20 @@ router.get('/trafico', async (req, res) => {
         await connect();
 
         if (data) {
+            // Map all relevant properties to be passed to insertTrafico
             await insertTrafico(data.features.map(feature => ({
                 line: feature.geometry.coordinates.map(coord => ({ x: coord[0], y: coord[1] })),
-                blockDescription: feature.properties.blockDescription
+                blockDescription: feature.properties.blockDescription || '',  // Handle empty descriptions
+                severity: feature.properties.severity || null,                // Include severity
+                delay: feature.properties.delay || null,                      // Include delay
+                blockType: feature.properties.blockType || null,              // Include block type
+                roadType: feature.properties.roadType || null,                // Include road type
+                blockStartTime: feature.properties.blockStartTime             // Include block start time
+                    ? new Date(feature.properties.blockStartTime).toISOString()
+                    : null,
+                blockExpiration: feature.properties.blockExpiration           // Include block expiration
+                    ? new Date(feature.properties.blockExpiration).toISOString()
+                    : null
             })));
             console.log('OK');
             res.status(200).json(data);
@@ -29,9 +40,11 @@ router.get('/trafico', async (req, res) => {
     }
 });
 
+
 async function insertTrafico(jams) {
     try {
         for (const jam of jams) {
+            console.log(jam);
             if (jam.line && jam.line.length > 0) {
                 // Crear un objeto GeoJSON para la geometría de la línea
                 const geojsonLine = {
@@ -39,12 +52,31 @@ async function insertTrafico(jams) {
                     coordinates: jam.line.map(point => [point.x, point.y]) // Asegúrate de que sea [longitud, latitud]
                 };
 
+                // Verifica y extrae las propiedades correctamente
+                const descripcion = jam.blockDescription || '';
+                const severity = jam.severity !== undefined ? jam.severity : null;
+                const delay = jam.delay !== undefined ? jam.delay : null;
+                const blockType = jam.blockType || null;
+                const roadType = jam.roadType || null;
+                const blockStartTime = jam.blockStartTime
+                    ? new Date(jam.blockStartTime).toISOString()
+                    : null;
+                const blockExpiration = jam.blockExpiration
+                    ? new Date(jam.blockExpiration).toISOString()
+                    : null;
+
                 // Configurar la instrucción para la inserción en la tabla trafico
                 const instruccion = {
                     'tabla': 'trafico',
                     'datos': {
-                        'geom': JSON.stringify(geojsonLine),  // Solo el GeoJSON como cadena
-                        'descripcion': jam.blockDescription || '' // Manejo de propiedades vacías
+                        'geom': JSON.stringify(geojsonLine),        // Geometría como cadena GeoJSON
+                        'descripcion': descripcion,                // Manejo de descripciones vacías
+                        'severity': severity,                      // Severidad
+                        'delay': delay,                            // Retraso
+                        'block_type': blockType,                   // Tipo de bloqueo
+                        'road_type': roadType,                     // Tipo de carretera
+                        'block_start_time': blockStartTime,        // Tiempo de inicio del bloqueo
+                        'block_expiration': blockExpiration        // Tiempo de expiración del bloqueo
                     }
                 };
 
@@ -59,7 +91,9 @@ async function insertTrafico(jams) {
     }
 }
 
-// Función para transformar los datos a formato GeoJSON
+
+
+
 async function transformToGeoJSON(jams) {
     return {
         "type": "FeatureCollection",
@@ -70,26 +104,49 @@ async function transformToGeoJSON(jams) {
                 "coordinates": jam.line.map(point => [point.x, point.y])
             },
             "properties": {
-                "blockDescription": jam.blockDescription
+                "blockDescription": jam.blockDescription,
+                "severity": jam.severity,
+                "delay": jam.delay,
+                "blockType": jam.blockType,
+                "roadType": jam.roadType,
+                "blockStartTime": jam.blockStartTime,
+                "blockExpiration": jam.blockExpiration
             }
         }))
     };
 }
 
-// Función para obtener datos de la API y transformarlos
 async function fetchAndTransformData(apiUrl) {
     try {
         const response = await axios.get(apiUrl);
-        const jams = response.data.jams; // Asegúrate de que esto es un array de objetos jam
+        const jams = response.data.jams; // Verifica que esto es un array de objetos jam
 
         if (!Array.isArray(jams)) {
             throw new Error('La respuesta no contiene un array de jams.');
         }
 
-        return await transformToGeoJSON(jams);
+        return {
+            "type": "FeatureCollection",
+            "features": jams.map(jam => ({
+                "type": "Feature",
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": jam.line.map(point => [point.x, point.y]) // Asegúrate del formato correcto
+                },
+                "properties": {
+                    "blockDescription": jam.blockDescription || '', // Descripción del bloqueo
+                    "severity": jam.severity !== undefined ? jam.severity : null, // Severidad
+                    "delay": jam.delay !== undefined ? jam.delay : null,         // Retraso
+                    "blockType": jam.blockType || null,                          // Tipo de bloqueo
+                    "roadType": jam.roadType || null,                            // Tipo de carretera
+                    "blockStartTime": jam.blockStartTime || null,                // Tiempo de inicio del bloqueo
+                    "blockExpiration": jam.blockExpiration || null               // Tiempo de expiración del bloqueo
+                }
+            }))
+        };
     } catch (error) {
         console.error('Error al obtener los datos:', error);
-        throw error; // Re-lanzar el error para manejarlo en el archivo principal
+        throw error;
     }
 }
 

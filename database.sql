@@ -1,13 +1,13 @@
-#Extensión para GeoJson
+--Extensión para GeoJson
 CREATE EXTENSION IF NOT EXISTS postgis;
 
-#Extensión para dijkstra
+--Extensión para dijkstra
 CREATE EXTENSION IF NOT EXISTS pgrouting;
 
-#Extensión para UUID
+--Extensión para UUID
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -------------------------------------------------------------------------------------------------------------------------------------------
-#Aglomeracion
+--Aglomeracion
 CREATE TABLE aglomeracion (
     paradero VARCHAR(255) PRIMARY KEY,                          --Código paradero
     comuna VARCHAR(255),                                        --Comuna del paradero
@@ -50,7 +50,7 @@ CREATE TABLE aglomeracion (
     "23:30:00" FLOAT
 );
 -------------------------------------------------------------------------------------------------------------------------------------
-#Subidas
+--Subidas
 CREATE TABLE subidas (
     paradero VARCHAR(255) PRIMARY KEY,                          --Código del paradero
     comuna VARCHAR(255),                                        --Comuna del paradero
@@ -93,7 +93,7 @@ CREATE TABLE subidas (
     "23:30:00" FLOAT
 );
 ------------------------------------------------------------------------------------------------------------------------------------------
-#Espera
+--Espera
 CREATE TABLE espera (
     id SERIAL PRIMARY KEY,                                      --Identificador único
     paradero VARCHAR(20) NOT NULL,                              --Código del paradero consultado
@@ -105,19 +105,19 @@ CREATE TABLE espera (
     consulta TIMESTAMP DEFAULT CURRENT_TIMESTAMP                --Tiempo en el que se realizó la consulta
 );
 ------------------------------------------------------------------------------------------------------------------------------------------
-                #Infraestructura
-#Recorridos
+                --Infraestructura
+--Recorridos
 CREATE TABLE recorridos (
     codigo VARCHAR(50) PRIMARY KEY,
     geom geometry(LINESTRING, 4326) -- Usamos el tipo LINESTRING con SRID 4326 (WGS 84)
 );
-#Paraderos
+--Paraderos
 CREATE TABLE paraderos (
     codigo VARCHAR(50) PRIMARY KEY,                             --Código del paradero
     geom GEOMETRY(Point, 4326),                          --Coordenadas del paradero         
     servicios JSONB            
 );
-#Calles
+--Calles
 CREATE TABLE calles (
     id SERIAL PRIMARY KEY,                                      --Identificador único
     origen VARCHAR(10) REFERENCES paraderos(codigo),            --Paradero de origen
@@ -126,7 +126,7 @@ CREATE TABLE calles (
     geom GEOMETRY(LineString, 4326)                             --Coordenadas que unen los paraderos
 );
 ----------------------------------------------------------------------------------------------------------------------------------------
-#Alertas
+--Alertas
 CREATE TABLE alertas (
     uuid UUID PRIMARY KEY,                                      --ID único del reporte
     calle VARCHAR(100),                                         --Calle donde se origina el incidente
@@ -135,7 +135,7 @@ CREATE TABLE alertas (
     geom GEOGRAPHY(POINT, 4326)                                 --Coordenadas del reporte
 );
 ------------------------------------------------------------------------------------------------------------------------------------------
-#Metro
+--Metro
 CREATE TABLE metro (
     id SERIAL PRIMARY KEY,                                      --Identificador único
     nombre VARCHAR(255) NOT NULL,                               --Nombre de la estación
@@ -145,15 +145,21 @@ CREATE TABLE metro (
     linea VARCHAR(10) NOT NULL                                  --Línea a la que pertenece la estación
 );
 ------------------------------------------------------------------------------------------------------------------------------------------
-#Tráfico_Waze
 CREATE TABLE trafico (
-    id SERIAL PRIMARY KEY,                                      --Identificador único
-    geom GEOMETRY(LineString, 4326),                            --Coordenadas del incidente
-    descripcion VARCHAR(255),                                   --Tipo de incidente (trabajos, policia, congestion)
-    creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP                --Hora de creación del incidente
+    id SERIAL PRIMARY KEY,                                      -- Identificador único para cada evento de tráfico
+    geom GEOMETRY(LineString, 4326),                            -- Geometría del evento de tráfico (línea representando el incidente)
+    descripcion VARCHAR(255),                                   -- Descripción del evento o bloqueo (ejemplo: trabajos, cierre de carretera)
+    severity INTEGER,                                           -- Nivel de severidad (1-5, donde 5 es el más severo)
+    delay INTEGER,                                              -- Retraso causado por el evento de tráfico (en segundos)
+    block_type VARCHAR(255),                                    -- Tipo de evento (ejemplo: ROAD_CLOSED_EVENT, CONGESTION)
+    road_type INTEGER,                                          -- Tipo de carretera (ejemplo: autopista, arteria principal)
+    block_start_time TIMESTAMP,                                 -- Hora en que comenzó el evento
+    block_expiration TIMESTAMP,                                 -- Hora en que se espera que finalice el evento
+    creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP           -- Hora de creación del registro en la base de datos
 );
+CREATE INDEX IF NOT EXISTS idx_threat_geom ON threat USING GIST (geom);
 ------------------------------------------------------------------------------------------------------------------------------------------
-#Incidentes
+--Incidentes
 CREATE TABLE incidentes(
     id INT PRIMARY KEY,                                         -- ID único para cada incidente
     fecha TIMESTAMP,                                            -- Fecha de publicación del post
@@ -161,7 +167,7 @@ CREATE TABLE incidentes(
     post_url VARCHAR(255)                                       -- URL del post para acceso directo
 );
 -------------------------------------------------------------------------------------------------------------------------------------------
-#Disponibilidad UOCT
+--Disponibilidad UOCT
 CREATE TABLE disponibilidad (
     id SERIAL PRIMARY KEY,                                      -- Identificador único
     origen VARCHAR(255) NOT NULL,                               -- Lugar de origen
@@ -171,12 +177,12 @@ CREATE TABLE disponibilidad (
     tiempo_trayecto INTEGER,                                    -- Tiempo que se demora en recorrer el trayecto
     nivel_congestion INTEGER,                                   -- Nivel de congestión del segmento
     habilitado BOOLEAN,                                         -- Si el segmento se encuentra habilitado para la circulación
-    largo_segmento INTEGER                                      -- Largo del segmento del incidente
+    largo_segmento INTEGER,                                      -- Largo del segmento del incidente
     UNIQUE (origen, destino)                                    -- Restricción única para la combinación de origen y destino
 );
 -----------------------------------------------------------------------------------------------------------------------------------------------
-        #Trafico Google
-#Rutas
+        --Trafico Google
+--Rutas
 CREATE TABLE rutas (
   id SERIAL PRIMARY KEY,
   origen GEOGRAPHY(Point),
