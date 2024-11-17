@@ -1,0 +1,221 @@
+<!-- plan-route.hbs -->
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet/dist/leaflet.css"
+/>
+<style>
+  #map {
+    height: 500px;
+    margin-bottom: 20px;
+  }
+  .form-group {
+    margin-bottom: 15px;
+  }
+</style>
+
+<div class="content-page">
+  <div class="container-fluid">
+    <h2>Planificar Ruta</h2>
+    <form action="/plan-route" method="POST" id="routeForm">
+      <div class="form-group">
+        <label for="time">Hora:</label>
+        <select name="time" id="time" class="form-control" required>
+          <option selected disabled>Seleccione</option>
+          <option value="05:30:00">5:30:00</option>
+          <option value="06:00:00">6:00:00</option>
+          <option value="06:30:00">6:30:00</option>
+          <option value="07:00:00">7:00:00</option>
+          <option value="07:30:00">7:30:00</option>
+          <option value="08:00:00">8:00:00</option>
+          <option value="08:30:00">8:30:00</option>
+          <option value="09:00:00">9:00:00</option>
+          <option value="09:30:00">9:30:00</option>
+          <option value="10:00:00">10:00:00</option>
+          <option value="10:30:00">10:30:00</option>
+          <option value="11:00:00">11:00:00</option>
+          <option value="11:30:00">11:30:00</option>
+          <option value="12:00:00">12:00:00</option>
+          <option value="12:30:00">12:30:00</option>
+          <option value="13:00:00">13:00:00</option>
+          <option value="13:30:00">13:30:00</option>
+          <option value="14:00:00">14:00:00</option>
+          <option value="14:30:00">14:30:00</option>
+          <option value="15:00:00">15:00:00</option>
+          <option value="15:30:00">15:30:00</option>
+          <option value="16:00:00">16:00:00</option>
+          <option value="16:30:00">16:30:00</option>
+          <option value="17:00:00">17:00:00</option>
+          <option value="17:30:00">17:30:00</option>
+          <option value="18:00:00">18:00:00</option>
+          <option value="18:30:00">18:30:00</option>
+          <option value="19:00:00">19:00:00</option>
+          <option value="19:30:00">19:30:00</option>
+          <option value="20:00:00">20:00:00</option>
+          <option value="20:30:00">20:30:00</option>
+          <option value="21:00:00">21:00:00</option>
+          <option value="21:30:00">21:30:00</option>
+          <option value="22:00:00">22:00:00</option>
+          <option value="22:30:00">22:30:00</option>
+          <option value="23:00:00">23:00:00</option>
+          <option value="23:30:00">23:30:00</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="search_radius">Radio de Búsqueda (metros):</label>
+        <input
+          type="number"
+          name="search_radius"
+          id="search_radius"
+          class="form-control"
+          value="500"
+          min="100"
+          max="5000"
+          required
+        />
+      </div>
+
+      <div id="map"></div>
+
+      <div class="form-group">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          id="useCurrentLocation"
+        >
+          Usar mi ubicación actual como inicio
+        </button>
+      </div>
+
+      <input
+        type="hidden"
+        name="start_lat"
+        id="start_lat"
+        required
+      />
+      <input
+        type="hidden"
+        name="start_lon"
+        id="start_lon"
+        required
+      />
+      <input
+        type="hidden"
+        name="end_lat"
+        id="end_lat"
+        required
+      />
+      <input
+        type="hidden"
+        name="end_lon"
+        id="end_lon"
+        required
+      />
+
+      <div class="form-group">
+        <button type="submit" class="btn btn-primary">
+          Planificar Ruta
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  var map = L.map('map').setView([-33.45, -70.6667], 13);
+  L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {
+      maxZoom: 19,
+      attribution: 'Map data © OpenStreetMap contributors',
+    }
+  ).addTo(map);
+
+  var startMarker = null;
+  var endMarker = null;
+
+  function onMapClick(e) {
+    if (!startMarker) {
+      startMarker = L.marker(e.latlng, {
+        draggable: true,
+      })
+        .addTo(map)
+        .bindPopup('Inicio')
+        .openPopup();
+      document.getElementById('start_lat').value = e.latlng.lat;
+      document.getElementById('start_lon').value = e.latlng.lng;
+      startMarker.on('dragend', function (event) {
+        var position = event.target.getLatLng();
+        document.getElementById('start_lat').value = position.lat;
+        document.getElementById('start_lon').value = position.lng;
+      });
+    } else if (!endMarker) {
+      endMarker = L.marker(e.latlng, {
+        draggable: true,
+      })
+        .addTo(map)
+        .bindPopup('Destino')
+        .openPopup();
+      document.getElementById('end_lat').value = e.latlng.lat;
+      document.getElementById('end_lon').value = e.latlng.lng;
+      endMarker.on('dragend', function (event) {
+        var position = event.target.getLatLng();
+        document.getElementById('end_lat').value = position.lat;
+        document.getElementById('end_lon').value = position.lng;
+      });
+    } else {
+      alert(
+        'Ya ha seleccionado el inicio y el destino. Arrastre los marcadores para ajustar las ubicaciones.'
+      );
+    }
+  }
+
+  map.on('click', onMapClick);
+
+  document
+    .getElementById('useCurrentLocation')
+    .addEventListener('click', function () {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function (position) {
+            var lat = position.coords.latitude;
+            var lng = position.coords.longitude;
+            if (startMarker) map.removeLayer(startMarker);
+            startMarker = L.marker([lat, lng], { draggable: true })
+              .addTo(map)
+              .bindPopup('Inicio (Mi Ubicación)')
+              .openPopup();
+            document.getElementById('start_lat').value = lat;
+            document.getElementById('start_lon').value = lng;
+            map.setView([lat, lng], 15);
+            startMarker.on('dragend', function (event) {
+              var position = event.target.getLatLng();
+              document.getElementById('start_lat').value = position.lat;
+              document.getElementById('start_lon').value = position.lng;
+            });
+          },
+          function () {
+            alert(
+              'No se pudo obtener su ubicación. Por favor, permita el acceso a la ubicación o ingrésela manualmente.'
+            );
+          }
+        );
+      } else {
+        alert('La geolocalización no es soportada por este navegador.');
+      }
+    });
+
+  document.getElementById('routeForm').addEventListener('submit', function (e) {
+    if (
+      !document.getElementById('start_lat').value ||
+      !document.getElementById('start_lon').value ||
+      !document.getElementById('end_lat').value ||
+      !document.getElementById('end_lon').value
+    ) {
+      e.preventDefault();
+      alert(
+        'Por favor, seleccione puntos de inicio y destino en el mapa.'
+      );
+    }
+  });
+</script>

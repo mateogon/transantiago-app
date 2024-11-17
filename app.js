@@ -10,6 +10,8 @@ const { Buffer } = require('buffer');
 // Importar Archivos Viejos
 const old = require('./appOld')
 
+const { computeRoute } = require('./routeCalculation'); // 
+
 // Importar archivos de metadata
 const paraderos = require('./metadata/paraderos');
 const recorrido = require('./metadata/recorrido');
@@ -25,10 +27,10 @@ const traffic = require('./threats/traffic');
 const disponibilidad = require('./threats/disponibilidad');
 const incidentes = require('./threats/incidentes');
 const trafficGoogle = require('./threats/trafficGoogle');
-
+const db = require('./database');
 const app = express();
 const PORT = process.env.PORT || 3000;
-
+db.connect();
 // Nombre del archivo CSV para guardar las ubicaciones
 const outputFilePath2 = 'ubicaciones_paraderos2.csv';
 
@@ -340,6 +342,59 @@ app.get('/obtener-ubicaciones', getSession ,async (req, res) => {
 app.get('/paradero/:stopid', getSession, obtenerUbicacion, (req, res) => {
   res.json({lat: req.ubicacion.latitud, lon: req.ubicacion.longitud})
 });
+app.get('/plan-route', (req, res) => {
+  res.render('plan-route');
+});
+
+app.post('/plan-route', async (req, res) => {
+  const { start_lat, start_lon, end_lat, end_lon, time, search_radius } = req.body;
+
+  // Validación adicional en el backend
+  if (
+    !start_lat || !start_lon ||
+    !end_lat || !end_lon ||
+    !time || !search_radius
+  ) {
+    console.error('Missing required fields in the request body');
+    return res.status(400).send('Faltan campos requeridos.');
+  }
+
+  try {
+    console.log(`Computing route from (${start_lat}, ${start_lon}) to (${end_lat}, ${end_lon}) at time ${time} with search radius ${search_radius} meters`);
+
+    const routeData = await computeRoute(
+      parseFloat(start_lat),
+      parseFloat(start_lon),
+      parseFloat(end_lat),
+      parseFloat(end_lon),
+      time,
+      parseFloat(search_radius)
+    );
+
+    const formattedRouteData = routeData.map((segment) => ({
+      ...segment,
+      cost: parseFloat(segment.cost).toFixed(2), // Format costs properly
+    }));
+    
+    const totalCost = routeData
+  .reduce((acc, segment) => acc + parseFloat(segment.cost), 0)
+  .toFixed(2);
+
+    res.render('route-result', {
+      routeData: formattedRouteData, // Pass formatted route data
+      totalCost,                     // Pass total cost
+      start_lat: parseFloat(start_lat),
+      start_lon: parseFloat(start_lon),
+      end_lat: parseFloat(end_lat),
+      end_lon: parseFloat(end_lon),
+    });
+    
+  } catch (error) {
+    console.error('Error computing route:', error.message);
+    res.status(500).send('Error al calcular la ruta.');
+  }
+});
+
 
 // Usar rutas
 

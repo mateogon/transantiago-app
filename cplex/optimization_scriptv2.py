@@ -124,3 +124,4 @@ if solution:
 else:
     logger.error("No feasible solution found.")
     print("No feasible solution found.")
+

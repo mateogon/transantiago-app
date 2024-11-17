@@ -1,0 +1,11 @@
+2024-11-17 11:56:54,960 - Optimal Solution Found.
+2024-11-17 11:56:55,410 - Selected Routes: [(np.int64(170719), 'PJ97'), (np.int64(278488), 'PA558')]
+2024-11-17 12:39:09,694 - Optimal Solution Found.
+2024-11-17 12:39:10,195 - Selected Routes: [(np.int64(170719), 'PJ97'), (np.int64(278488), 'PA558')]
+2024-11-17 13:06:09,178 - Optimal Solution Found.
+2024-11-17 13:50:34,629 - Optimal Solution Found.
+2024-11-17 13:50:35,131 - Selected Routes: [np.int64(170719), np.int64(278488)]
+2024-11-17 13:50:35,140 - Services on the Selected Route:
+           id paradero_origen paradero_destino recorrido_codigo
+111    170719            PJ97            PA383             508I
+26710  278488          PB2118            PA558             B28I

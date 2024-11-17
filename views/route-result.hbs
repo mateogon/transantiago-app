@@ -1,0 +1,136 @@
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet/dist/leaflet.css"
+/>
+<style>
+  #map {
+    height: 500px;
+    margin-bottom: 20px;
+  }
+</style>
+
+<div class="content-page">
+  <div class="container-fluid">
+    <h2>Resultado de la Ruta</h2>
+    <div id="map"></div>
+    <div>
+      <h4>Detalles de la Ruta (Costo Total: {{totalCost}}):</h4>
+      <ul>
+        {{#each routeData}}
+        <li>
+          Paso {{this.seq}}: De {{this.paradero_origen}} a
+          {{this.paradero_destino}} en recorrido
+          {{this.recorrido_codigo}} (Costo: {{this.cost}})
+        </li>
+        {{/each}}
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<!-- route-result.hbs -->
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet/dist/leaflet.css"
+/>
+<style>
+  #map {
+    height: 500px;
+    margin-bottom: 20px;
+  }
+</style>
+
+<div class="content-page">
+  <div class="container-fluid">
+    <h2>Resultado de la Ruta</h2>
+    <div id="map"></div>
+    <div>
+      <h4>Detalles de la Ruta (Costo Total: {{totalCost}}):</h4>
+      <ul>
+        {{#each routeData}}
+        <li>
+          Paso {{this.seq}}: De {{this.paradero_origen}} a {{this.paradero_destino}}
+          en recorrido {{this.recorrido_codigo}} (Costo: {{this.cost}})
+        </li>
+        {{/each}}
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  var map = L.map('map').setView([{{start_lat}}, {{start_lon}}], 13);
+
+  L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {
+      maxZoom: 19,
+      attribution: 'Map data © OpenStreetMap contributors',
+    }
+  ).addTo(map);
+
+  // Parse the route data passed from the backend
+  var routeData = {{{json routeData}}};
+
+  if (!routeData || routeData.length === 0) {
+    alert('No se encontraron datos de ruta.');
+  } else {
+    var routeLines = [];
+
+    // Convert WKT geometry into coordinates
+    function parseWKT(wkt) {
+      var coords = [];
+      var match = wkt.match(/LINESTRING\((.*)\)/);
+      if (match) {
+        var points = match[1].split(',');
+        points.forEach(function (point) {
+          var lngLat = point.trim().split(' ');
+          coords.push([
+            parseFloat(lngLat[1]),
+            parseFloat(lngLat[0]),
+          ]);
+        });
+        return coords;
+      }
+      return null;
+    }
+
+    // Add each route segment to the map
+    routeData.forEach(function (edge) {
+      if (edge.geom_wkt) {
+        var geometry = parseWKT(edge.geom_wkt);
+        if (geometry) {
+          var polyline = L.polyline(geometry, { color: 'blue' })
+            .addTo(map)
+            .bindPopup(
+              'Recorrido: ' +
+                edge.recorrido_codigo +
+                '<br>De: ' +
+                edge.paradero_origen +
+                '<br>A: ' +
+                edge.paradero_destino +
+                '<br>Costo: ' +
+                edge.cost
+            );
+          routeLines.push(polyline);
+        }
+      }
+    });
+
+    // Fit the map to the route
+    if (routeLines.length > 0) {
+      var group = new L.featureGroup(routeLines);
+      map.fitBounds(group.getBounds());
+    }
+  }
+
+  // Add markers for start and end points
+  var startPoint = [{{start_lat}}, {{start_lon}}];
+  var endPoint = [{{end_lat}}, {{end_lon}}];
+
+  L.marker(startPoint).addTo(map).bindPopup('Inicio').openPopup();
+  L.marker(endPoint).addTo(map).bindPopup('Fin');
+</script>
